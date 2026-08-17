@@ -1,0 +1,131 @@
+@font-face {
+  font-family: "Bw Modelica";
+  src: url("fonts/BwModelica/BwModelica-Regular.otf") format("opentype");
+  font-weight: 400;
+}
+@font-face {
+  font-family: "Bw Modelica";
+  src: url("fonts/BwModelica/BwModelica-Medium.otf") format("opentype");
+  font-weight: 500;
+}
+@font-face {
+  font-family: "League Spartan";
+  src: url("fonts/LeagueSpartan/LeagueSpartan-Bold.ttf") format("truetype");
+  font-weight: 700;
+}
+
+:root {
+  --azul: #1A3D84;
+  --azul-medio: #2E5BA8;
+  --amarillo: #F7CC13;
+  --rojo: #E1061E;
+  --verde: #2E7D32;
+  --tinta: #2B2B2B;
+  --gris: #6B7280;
+  --blanco: #FFFFFF;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: "Bw Modelica", -apple-system, sans-serif;
+  color: var(--tinta);
+  background: var(--blanco);
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.header {
+  padding: 20px 28px 8px;
+}
+
+.logo {
+  height: 32px;
+}
+
+.tiles {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  padding: 12px 28px 28px;
+}
+
+.tile {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 20px;
+  background: var(--blanco);
+  border: 1px solid #E5E7EB;
+  border-radius: 12px;
+  cursor: pointer;
+  text-align: left;
+  transition: border-color 150ms ease-out, transform 150ms ease-out;
+  font-family: inherit;
+}
+
+.tile:hover {
+  border-color: var(--azul-medio);
+  transform: translateY(-2px);
+}
+
+.tile:focus-visible {
+  outline: 2px solid var(--azul-medio);
+  outline-offset: 2px;
+}
+
+.tile-title {
+  font-family: "League Spartan", sans-serif;
+  font-weight: 700;
+  font-size: 18px;
+  color: var(--azul);
+}
+
+.tile-desc {
+  font-size: 13px;
+  color: var(--gris);
+  line-height: 1.4;
+}
+
+.tile-cta {
+  margin-top: auto;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--azul-medio);
+}
+
+.tile-status {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: #F3F4F6;
+  color: var(--gris);
+}
+
+.tile-status[data-state="up"] {
+  background: #E8F5E9;
+  color: var(--verde);
+}
+
+.tile-status[data-state="down"] {
+  background: #FDECEA;
+  color: var(--rojo);
+}
+
+.footer {
+  padding: 10px 28px 16px;
+  font-size: 11px;
+  color: var(--gris);
+  text-align: center;
+}

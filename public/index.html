@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; font-src 'self'; script-src 'self';" />
+  <title>MejoraSuite</title>
+  <link rel="icon" href="brand/isotipo-color.png" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="header">
+    <img src="brand/lockup-horizontal-color.png" alt="Mejora Continua" class="logo" />
+  </header>
+
+  <main class="tiles">
+    <button class="tile" data-target="crm">
+      <span class="tile-title">MejoraCRM</span>
+      <span class="tile-desc">Clientes, interacciones y pipeline comercial</span>
+      <span class="tile-cta">Abrir →</span>
+    </button>
+
+    <button class="tile" data-target="contactos">
+      <span class="tile-title">MejoraContactos</span>
+      <span class="tile-desc">Limpieza y normalización de contactos con IA</span>
+      <span class="tile-cta">Abrir →</span>
+    </button>
+
+    <button class="tile" data-target="ws">
+      <span class="tile-title">MejoraWS</span>
+      <span class="tile-desc">Campañas de WhatsApp de escritorio</span>
+      <span class="tile-cta">Abrir →</span>
+      <span class="tile-status" id="ws-status" data-state="checking">Verificando…</span>
+    </button>
+  </main>
+
+  <footer class="footer">MejoraSuite — sede independiente. Cada producto corre y se despliega por su cuenta.</footer>
+
+  <script src="renderer.js"></script>
+</body>
+</html>
