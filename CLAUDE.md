@@ -32,5 +32,5 @@ No hay build step de bundler (Vite/webpack) — `public/` se sirve tal cual, sin
 
 ## Pendiente
 
-- [ ] Ícono de la app / instalador (`public/brand/isotipo-color.png` sirve como ícono de ventana; falta generar `.ico` para el build de electron-builder en Windows).
-- [ ] Firma de código del instalador (no configurada — el NSIS actual no está firmado).
+- [x] Ícono de la app / instalador (`public/brand/icon.ico`, cableado en `electron/main.mjs` como ícono de ventana en Windows y en `package.json` → `build.win.icon` para el instalador NSIS).
+- [ ] Firma de código del instalador — no configurada, el NSIS actual no está firmado. Hoy no bloquea: el sistema es de **uso interno**. Retomar si algún día se distribuye fuera de Mejora Continua (requiere certificado Authenticode).

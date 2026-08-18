@@ -42,7 +42,7 @@ function createWindow() {
     width: 880,
     height: 620,
     resizable: false,
-    icon: path.join(__dirname, '..', 'public', 'brand', 'isotipo-color.png'),
+    icon: path.join(__dirname, '..', 'public', 'brand', process.platform === 'win32' ? 'icon.ico' : 'isotipo-color.png'),
     webPreferences: {
       preload: path.join(__dirname, 'preload.cjs'),
       contextIsolation: true,
