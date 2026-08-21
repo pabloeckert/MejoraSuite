@@ -4,6 +4,6 @@
 const { contextBridge, ipcRenderer } = require('electron')
 
 contextBridge.exposeInMainWorld('suite', {
-  open: (target) => ipcRenderer.invoke('suite:open', target),
+  open: (target, demoMode) => ipcRenderer.invoke('suite:open', target, demoMode),
   checkMejoraWs: () => ipcRenderer.invoke('suite:checkMejoraWs'),
 })

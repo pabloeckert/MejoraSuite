@@ -54,14 +54,21 @@ function createWindow() {
 }
 
 function registerIpcHandlers() {
-  ipcMain.handle('suite:open', (_e, target) => {
+  // `demoMode` (Fase 7 de MejoraSuite): el toggle maestro de la pantalla
+  // inicial viaja como query param al abrir cada herramienta, para que las
+  // tres arranquen en el mismo modo sin que este launcher toque su código ni
+  // su storage directamente (siguen siendo apps independientes). Cada una
+  // sabe leer `?demo=true|false` por su cuenta (MejoraCRM/MejoraContactos en
+  // la URL, MejoraWS en el protocolo mejoraws://).
+  ipcMain.handle('suite:open', (_e, target, demoMode) => {
+    const demoParam = typeof demoMode === 'boolean' ? `?demo=${demoMode}` : ''
     if (target === 'ws') {
-      shell.openExternal(MEJORAWS_PROTOCOL_URL)
+      shell.openExternal(`${MEJORAWS_PROTOCOL_URL}${demoParam}`)
       return true
     }
     const url = URLS[target]
     if (!url) return false
-    shell.openExternal(url)
+    shell.openExternal(`${url}${demoParam}`)
     return true
   })
 
