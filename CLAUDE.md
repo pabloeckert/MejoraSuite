@@ -35,7 +35,19 @@ npm run dev     # levanta la app (electron .)
 npm run dist    # genera instalador Windows (NSIS) con electron-builder
 ```
 
-No hay build step de bundler (Vite/webpack) — `public/` se sirve tal cual, sin transformar.
+No hay build step de bundler (Vite/webpack) — `public/` se sirve tal cual, sin transformar. Tampoco hay tests ni linter configurados.
+
+## Arquitectura
+
+Flujo IPC de punta a punta (los tres archivos hay que leerlos juntos para entender un cambio):
+
+1. `public/renderer.js` — click en un tile llama a `window.suite.open(target, demoMode)`, expuesto por el preload.
+2. `electron/preload.cjs` — puente `contextBridge` (CJS a propósito, aunque el resto del proyecto es ESM: contextIsolation necesita CJS ahí).
+3. `electron/main.mjs` — `ipcMain.handle('suite:open', ...)` resuelve la URL/protocolo según `target` (`crm`, `contactos` → `shell.openExternal` a la URL de producción; `ws` → `shell.openExternal('mejoraws://open')`).
+
+**Patrón `demoMode`:** el toggle maestro de la pantalla inicial (`public/renderer.js`) se guarda en el `localStorage` propio del launcher (no comparte storage con las otras apps — son orígenes/procesos distintos) y viaja como query param (`?demo=true|false`) al abrir cada herramienta. MejoraSuite no le impone nada a cada producto — cada uno decide qué hacer con ese parámetro por su cuenta. No agregar lógica de modo demo específica de un producto acá.
+
+`suite:checkMejoraWs` hace polling cada 15s a `http://127.0.0.1:4180/status` (bridge local de MejoraWS) sin token — solo le importa si el puerto responde, no necesita autenticarse.
 
 ## Convenciones
 
