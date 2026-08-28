@@ -8,6 +8,7 @@
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
+  <div class="brand-watermark" aria-hidden="true"></div>
   <header class="header">
     <img src="brand/lockup-horizontal-color.png" alt="Mejora Continua" class="logo" />
     <button class="demo-toggle" id="demo-toggle" type="button" role="switch">
@@ -19,18 +20,41 @@
 
   <main class="tiles">
     <button class="tile" data-target="crm">
+      <span class="tile-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="8.5" cy="8" r="3" />
+          <path d="M2.5 20c0-3.3 2.7-6 6-6s6 2.7 6 6" />
+          <path d="M15.5 4.5c1.4.4 2.5 1.7 2.5 3.3 0 1.6-1.1 2.9-2.5 3.3" />
+          <path d="M15 14.2c2.6.6 4.5 2.9 4.5 5.8" />
+        </svg>
+      </span>
       <span class="tile-title">MejoraCRM</span>
       <span class="tile-desc">Clientes, interacciones y pipeline comercial</span>
       <span class="tile-cta">Abrir →</span>
     </button>
 
     <button class="tile" data-target="contactos">
+      <span class="tile-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="4" width="18" height="16" rx="2.5" />
+          <circle cx="9.5" cy="10.5" r="2.3" />
+          <path d="M5.5 17c.6-2 2.1-3 4-3s3.4 1 4 3" />
+          <path d="M15 9h3.5" />
+          <path d="M15 13h3.5" />
+        </svg>
+      </span>
       <span class="tile-title">MejoraContactos</span>
       <span class="tile-desc">Limpieza y normalización de contactos con IA</span>
       <span class="tile-cta">Abrir →</span>
     </button>
 
     <button class="tile" data-target="ws">
+      <span class="tile-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M4 20l1.3-3.9A8 8 0 1 1 8.8 19L4 20Z" />
+          <path d="M8.5 10.3c0 3.3 2.9 6.2 6.2 6.2" />
+        </svg>
+      </span>
       <span class="tile-title">MejoraWS</span>
       <span class="tile-desc">Campañas de WhatsApp de escritorio</span>
       <span class="tile-cta">Abrir →</span>

@@ -40,6 +40,18 @@ body {
   overflow: hidden;
 }
 
+.brand-watermark {
+  position: fixed;
+  right: -70px;
+  bottom: -70px;
+  width: 360px;
+  height: 360px;
+  background: url("brand/isotipo-color.png") no-repeat center / contain;
+  opacity: 0.06;
+  pointer-events: none;
+  z-index: -1;
+}
+
 .header {
   padding: 20px 28px 8px;
   display: flex;
@@ -143,6 +155,15 @@ body {
 .tile:focus-visible {
   outline: 2px solid var(--azul-medio);
   outline-offset: 2px;
+}
+
+.tile-icon {
+  color: var(--azul);
+}
+
+.tile-icon svg {
+  width: 28px;
+  height: 28px;
 }
 
 .tile-title {
