@@ -213,3 +213,193 @@ body {
   color: var(--gris);
   text-align: center;
 }
+
+/* --- Telemetría y Mando Unificado (Día 7) --- */
+.telemetry-panel {
+  display: grid;
+  grid-template-columns: 200px 180px 1fr;
+  gap: 12px;
+  padding: 0 28px;
+  margin-top: 14px;
+  margin-bottom: 2px;
+}
+
+.telemetry-card {
+  background: var(--blanco);
+  border: 1px solid #E5E7EB;
+  border-radius: 12px;
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+  position: relative;
+  transition: border-color 150ms ease-out, box-shadow 150ms ease-out;
+}
+
+.telemetry-card:hover {
+  border-color: #CBD5E1;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+}
+
+.telemetry-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.telemetry-label {
+  font-size: 11px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--gris);
+}
+
+.telemetry-val-primary {
+  font-family: "League Spartan", sans-serif;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--azul);
+  line-height: 1.15;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.telemetry-number {
+  font-size: 24px;
+  color: var(--azul);
+}
+
+.telemetry-sub {
+  font-size: 11px;
+  color: var(--gris);
+  margin-top: 4px;
+}
+
+.telemetry-icon {
+  color: var(--azul-medio);
+  opacity: 0.85;
+  display: flex;
+  align-items: center;
+}
+
+/* Estado de Gateway */
+.telemetry-status-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #D1D5DB;
+  display: inline-block;
+  position: relative;
+  flex-shrink: 0;
+}
+
+.telemetry-status-dot[data-state="online"] {
+  background: var(--verde);
+  box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.2);
+  animation: pulse-dot 2.4s infinite ease-in-out;
+}
+
+.telemetry-status-dot[data-state="offline"] {
+  background: var(--rojo);
+  box-shadow: 0 0 0 3px rgba(225, 6, 30, 0.2);
+}
+
+.telemetry-status-dot[data-state="checking"] {
+  background: var(--amarillo);
+  box-shadow: 0 0 0 3px rgba(247, 204, 19, 0.2);
+}
+
+@keyframes pulse-dot {
+  0% {
+    box-shadow: 0 0 0 0 rgba(46, 125, 50, 0.4);
+  }
+  70% {
+    box-shadow: 0 0 0 6px rgba(46, 125, 50, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(46, 125, 50, 0);
+  }
+}
+
+/* Sincronización */
+.telemetry-sync {
+  font-size: 10px;
+  color: var(--gris);
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.sync-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #D1D5DB;
+}
+
+.sync-dot[data-state="online"] {
+  background: var(--verde);
+}
+
+.sync-dot[data-state="offline"] {
+  background: var(--rojo);
+}
+
+/* Badges del ecosistema */
+.module-badges {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.module-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 500;
+  border: 1px solid #E5E7EB;
+  background: #F9FAFB;
+  color: var(--gris);
+  transition: all 150ms ease-out;
+  cursor: default;
+}
+
+.module-badge .badge-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #D1D5DB;
+  flex-shrink: 0;
+}
+
+.module-badge[data-status="active"] {
+  background: #E8F5E9;
+  color: #1B5E20;
+  border-color: #C8E6C9;
+}
+
+.module-badge[data-status="active"] .badge-dot {
+  background: var(--verde);
+}
+
+.module-badge[data-status="inactive"] {
+  background: #F3F4F6;
+  color: #9CA3AF;
+  border-color: #E5E7EB;
+  opacity: 0.85;
+}
+
+.module-badge[data-status="inactive"] .badge-dot {
+  background: #D1D5DB;
+}
+

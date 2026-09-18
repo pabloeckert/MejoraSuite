@@ -8,10 +8,45 @@
 // nada de Baileys/WhatsApp acá.
 
 import { app, BrowserWindow, ipcMain, shell } from 'electron'
+import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
+
+// Cargar .env de la raíz del proyecto si existe
+const envPath = path.join(__dirname, '..', '.env')
+if (fs.existsSync(envPath)) {
+  if (typeof process.loadEnvFile === 'function') {
+    try {
+      process.loadEnvFile(envPath)
+    } catch {
+      // Ignorar si falla la carga nativa
+    }
+  } else {
+    try {
+      const lines = fs.readFileSync(envPath, 'utf8').split('\n')
+      for (const line of lines) {
+        const trimmed = line.trim()
+        if (trimmed && !trimmed.startsWith('#')) {
+          const eqIdx = trimmed.indexOf('=')
+          if (eqIdx > 0) {
+            const k = trimmed.slice(0, eqIdx).trim()
+            const v = trimmed.slice(eqIdx + 1).trim()
+            if (k && !process.env[k]) {
+              process.env[k] = v
+            }
+          }
+        }
+      }
+    } catch {
+      // Ignorar parse manual
+    }
+  }
+}
+
+const CONTACTOS_API_URL = process.env.CONTACTOS_API_URL || 'https://tzatuvxatsduuslxqdtm.supabase.co/functions/v1/contactos-api'
+const CONTACTOS_API_KEY = process.env.CONTACTOS_API_KEY || '270fa9a7c24cf33908cdd2f5cf468760fd490d93049964c717d9a6433d8d3539'
 
 app.disableHardwareAcceleration()
 
@@ -28,6 +63,7 @@ if (!obtuvoLock) {
 }
 
 let mainWindow = null
+let telemetryInterval = null
 
 const URLS = {
   crm: 'https://crm.mejoraok.com',
@@ -37,10 +73,92 @@ const URLS = {
 const MEJORAWS_PROTOCOL_URL = 'mejoraws://open'
 const MEJORAWS_BRIDGE_URL = 'http://127.0.0.1:4180/status'
 
+async function fetchTelemetry() {
+  if (!CONTACTOS_API_URL || !CONTACTOS_API_KEY) {
+    return {
+      online: false,
+      status: 'unconfigured',
+      total_contactos: 0,
+      sistemas_conectados: [],
+      detalles_sistemas: [],
+      timestamp: new Date().toISOString(),
+      error: 'Variables CONTACTOS_API_URL o CONTACTOS_API_KEY no configuradas',
+    }
+  }
+
+  const endpoint = CONTACTOS_API_URL.includes('?')
+    ? `${CONTACTOS_API_URL}&health=true`
+    : `${CONTACTOS_API_URL}?health=true`
+
+  const controller = new AbortController()
+  const timeoutId = setTimeout(() => controller.abort(), 6000)
+
+  try {
+    const res = await fetch(endpoint, {
+      method: 'GET',
+      headers: {
+        'x-api-key': CONTACTOS_API_KEY,
+        'Accept': 'application/json',
+      },
+      signal: controller.signal,
+    })
+
+    clearTimeout(timeoutId)
+
+    if (!res.ok) {
+      return {
+        online: false,
+        status: `http_${res.status}`,
+        total_contactos: 0,
+        sistemas_conectados: [],
+        detalles_sistemas: [],
+        timestamp: new Date().toISOString(),
+        error: `HTTP ${res.status}: ${res.statusText}`,
+      }
+    }
+
+    const data = await res.json()
+    return {
+      online: data.status === 'ok',
+      status: data.status || 'ok',
+      total_contactos: typeof data.total_contactos === 'number' ? data.total_contactos : 0,
+      sistemas_conectados: Array.isArray(data.sistemas_conectados) ? data.sistemas_conectados : [],
+      detalles_sistemas: Array.isArray(data.detalles_sistemas) ? data.detalles_sistemas : [],
+      timestamp: data.timestamp || new Date().toISOString(),
+      error: null,
+    }
+  } catch (err) {
+    clearTimeout(timeoutId)
+    return {
+      online: false,
+      status: 'offline',
+      total_contactos: 0,
+      sistemas_conectados: [],
+      detalles_sistemas: [],
+      timestamp: new Date().toISOString(),
+      error: err.name === 'AbortError' ? 'Tiempo de espera agotado' : err.message,
+    }
+  }
+}
+
+function startTelemetryPolling() {
+  if (telemetryInterval) clearInterval(telemetryInterval)
+
+  // Polling no bloqueante cada 60 segundos
+  telemetryInterval = setInterval(async () => {
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      const data = await fetchTelemetry()
+      if (mainWindow && !mainWindow.isDestroyed()) {
+        mainWindow.webContents.send('suite:telemetryUpdate', data)
+      }
+    }
+  }, 60000)
+}
+
 function createWindow() {
   mainWindow = new BrowserWindow({
-    width: 880,
-    height: 620,
+    width: 920,
+    height: 680,
     resizable: false,
     icon: path.join(__dirname, '..', 'public', 'brand', process.platform === 'win32' ? 'icon.ico' : 'isotipo-color.png'),
     webPreferences: {
@@ -51,15 +169,24 @@ function createWindow() {
   })
   mainWindow.setMenuBarVisibility(false)
   mainWindow.loadFile(path.join(__dirname, '..', 'public', 'index.html'))
+
+  mainWindow.webContents.on('did-finish-load', async () => {
+    const initialData = await fetchTelemetry()
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.webContents.send('suite:telemetryUpdate', initialData)
+    }
+  })
+
+  mainWindow.on('closed', () => {
+    if (telemetryInterval) {
+      clearInterval(telemetryInterval)
+      telemetryInterval = null
+    }
+    mainWindow = null
+  })
 }
 
 function registerIpcHandlers() {
-  // `demoMode` (Fase 7 de MejoraSuite): el toggle maestro de la pantalla
-  // inicial viaja como query param al abrir cada herramienta, para que las
-  // tres arranquen en el mismo modo sin que este launcher toque su código ni
-  // su storage directamente (siguen siendo apps independientes). Cada una
-  // sabe leer `?demo=true|false` por su cuenta (MejoraCRM/MejoraContactos en
-  // la URL, MejoraWS en el protocolo mejoraws://).
   ipcMain.handle('suite:open', (_e, target, demoMode) => {
     const demoParam = typeof demoMode === 'boolean' ? `?demo=${demoMode}` : ''
     if (target === 'ws') {
@@ -72,10 +199,6 @@ function registerIpcHandlers() {
     return true
   })
 
-  // Solo mide si el bridge de MejoraWS responde algo (aunque sea 401 por
-  // falta de token) -- no necesita el token para esto, esta app no tiene
-  // por qué guardarlo. Un 401 significa "está corriendo"; sin respuesta
-  // significa "no está corriendo".
   ipcMain.handle('suite:checkMejoraWs', async () => {
     try {
       const controller = new AbortController()
@@ -87,11 +210,16 @@ function registerIpcHandlers() {
       return false
     }
   })
+
+  ipcMain.handle('suite:getTelemetry', async () => {
+    return await fetchTelemetry()
+  })
 }
 
 app.whenReady().then(() => {
   registerIpcHandlers()
   createWindow()
+  startTelemetryPolling()
 
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow()
@@ -99,5 +227,9 @@ app.whenReady().then(() => {
 })
 
 app.on('window-all-closed', () => {
+  if (telemetryInterval) {
+    clearInterval(telemetryInterval)
+    telemetryInterval = null
+  }
   if (process.platform !== 'darwin') app.quit()
 })

@@ -18,6 +18,66 @@
   </header>
   <p class="demo-toggle-hint" id="demo-toggle-hint"></p>
 
+  <section class="telemetry-panel" id="telemetry-panel" aria-label="Telemetría y Mando Unificado">
+    <div class="telemetry-card telemetry-gateway">
+      <div class="telemetry-card-top">
+        <span class="telemetry-label">Gateway Central</span>
+        <span class="telemetry-status-dot" id="gateway-dot" data-state="checking"></span>
+      </div>
+      <div class="telemetry-val-primary" id="gateway-text">Verificando…</div>
+      <div class="telemetry-sub" id="gateway-sub">contactos-api · Supabase</div>
+    </div>
+
+    <div class="telemetry-card telemetry-identities">
+      <div class="telemetry-card-top">
+        <span class="telemetry-label">Identidades Unificadas</span>
+        <span class="telemetry-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+            <circle cx="9" cy="7" r="4" />
+            <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+            <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+          </svg>
+        </span>
+      </div>
+      <div class="telemetry-val-primary telemetry-number" id="telemetry-counter">—</div>
+      <div class="telemetry-sub">perfiles consolidados</div>
+    </div>
+
+    <div class="telemetry-card telemetry-modules">
+      <div class="telemetry-card-top">
+        <span class="telemetry-label">Ecosistema Conectado</span>
+        <span class="telemetry-sync" id="telemetry-sync-time">
+          <span class="sync-dot" id="sync-dot"></span>
+          <span id="sync-label">Sincronizando</span>
+        </span>
+      </div>
+      <div class="module-badges" id="module-badges">
+        <div class="module-badge" id="badge-diagnostico" data-sistema="MejoraDiagnostico" title="MejoraDiagnóstico">
+          <span class="badge-dot"></span>
+          <span class="badge-label">Diagnóstico</span>
+        </div>
+        <div class="module-badge" id="badge-crm" data-sistema="MejoraCRM" title="MejoraCRM">
+          <span class="badge-dot"></span>
+          <span class="badge-label">CRM</span>
+        </div>
+        <div class="module-badge" id="badge-ws" data-sistema="MejoraWS" title="MejoraWS">
+          <span class="badge-dot"></span>
+          <span class="badge-label">WS</span>
+        </div>
+        <div class="module-badge" id="badge-sm" data-sistema="MejoraSM" title="MejoraSM">
+          <span class="badge-dot"></span>
+          <span class="badge-label">SM</span>
+        </div>
+        <div class="module-badge" id="badge-app" data-sistema="MejoraApp" title="MejoraApp">
+          <span class="badge-dot"></span>
+          <span class="badge-label">App</span>
+        </div>
+      </div>
+      <div class="telemetry-sub">5 módulos integrados al motor</div>
+    </div>
+  </section>
+
   <main class="tiles">
     <button class="tile" data-target="crm">
       <span class="tile-icon" aria-hidden="true">
