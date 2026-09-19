@@ -61,6 +61,7 @@ const syncDot = document.getElementById("sync-dot");
 const syncLabel = document.getElementById("sync-label");
 
 const MODULE_KEYS = [
+  { id: "badge-web", name: "Mejoraok" },
   { id: "badge-diagnostico", name: "MejoraDiagnostico" },
   { id: "badge-crm", name: "MejoraCRM" },
   { id: "badge-ws", name: "MejoraWS" },
