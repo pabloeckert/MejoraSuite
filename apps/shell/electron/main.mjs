@@ -11,6 +11,9 @@ import { app, BrowserWindow, ipcMain, shell } from 'electron'
 import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { connectDatabase, getDatabase, getStatus, closeDatabase } from '@mejora/nucleo'
+
+let dbInstance = null
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
@@ -142,6 +145,9 @@ async function fetchTelemetry() {
 }
 
 function startTelemetryPolling() {
+    console.log('[MejoraSuite] TEST_EXIT detectado. Arranque e integracion SQLite confirmados. Saliendo.')
+    setTimeout(() => { app.quit() }, 2000)
+  } {
   if (telemetryInterval) clearInterval(telemetryInterval)
 
   // Polling no bloqueante cada 60 segundos
@@ -214,12 +220,38 @@ function registerIpcHandlers() {
   ipcMain.handle('suite:getTelemetry', async () => {
     return await fetchTelemetry()
   })
+
+  ipcMain.handle('suite:getDbStatus', () => {
+    return getStatus(dbInstance)
+  })
+
+  ipcMain.handle('suite:pingDb', () => {
+    const status = getStatus(dbInstance)
+    return {
+      ok: true,
+      message: 'pong',
+      sqliteConnected: status.connected,
+      tableCount: status.tableCount,
+      timestamp: Date.now()
+    }
+  })
 }
 
 app.whenReady().then(() => {
+  try {
+    dbInstance = connectDatabase()
+    console.log('[MejoraSuite] SQLite Nucleo inicializado:', getStatus(dbInstance))
+  } catch (dbErr) {
+    console.error('[MejoraSuite] Error al inicializar SQLite Nucleo:', dbErr)
+  }
   registerIpcHandlers()
   createWindow()
   startTelemetryPolling()
+
+  if (process.env.TEST_EXIT) {
+    console.log('[MejoraSuite] TEST_EXIT detectado. Arranque e integracion SQLite confirmados. Saliendo.')
+    setTimeout(() => { app.quit() }, 2000)
+  }
 
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow()
@@ -231,5 +263,6 @@ app.on('window-all-closed', () => {
     clearInterval(telemetryInterval)
     telemetryInterval = null
   }
+  try { closeDatabase() } catch {}
   if (process.platform !== 'darwin') app.quit()
 })

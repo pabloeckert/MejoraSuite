@@ -4,7 +4,7 @@ import { TelemetryBar } from './components/TelemetryBar';
 import { LauncherMatrix } from './components/LauncherMatrix';
 import { SystemHealthModal } from './components/SystemHealthModal';
 import { fetchTelemetry, TelemetryData } from './services/telemetryService';
-import { ShieldCheck, Compass, Zap, Layers } from 'lucide-react';
+import { ShieldCheck, Compass, Zap, Layers, Database } from 'lucide-react';
 
 const initialTelemetry: TelemetryData = {
   totalContactos: 20,
@@ -29,6 +29,7 @@ export function App() {
   const [telemetry, setTelemetry] = useState<TelemetryData>(initialTelemetry);
   const [loading, setLoading] = useState(false);
   const [healthModalOpen, setHealthModalOpen] = useState(false);
+  const [dbStatus, setDbStatus] = useState<{ connected: boolean; tableCount: number; tables: string[] } | null>(null);
 
   const loadData = useCallback(async () => {
     setLoading(true);
@@ -48,6 +49,18 @@ export function App() {
     return () => clearInterval(interval);
   }, [loadData]);
 
+  useEffect(() => {
+    if (typeof window !== 'undefined' && (window as any).suite?.getDbStatus) {
+      (window as any).suite.pingDb?.().then((res: any) => {
+        console.log('[App] pingDb response:', res);
+      });
+      (window as any).suite.getDbStatus().then((status: any) => {
+        console.log('[App] getDbStatus response:', status);
+        if (status) setDbStatus(status);
+      }).catch((e: any) => console.warn('[App] SQLite status check:', e));
+    }
+  }, []);
+
   return (
     <div className="min-h-screen bg-mc-slate text-slate-100 flex flex-col font-modelica">
       {/* Header */}
@@ -62,9 +75,17 @@ export function App() {
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Hero Section */}
         <div className="mb-8">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-mc-amarillo/10 border border-mc-amarillo/20 text-mc-amarillo text-xs font-spartan font-bold uppercase tracking-wider mb-3">
-            <Zap className="w-3.5 h-3.5" />
-            <span>suite.mejoraok.com · En Vivo</span>
+          <div className="flex flex-wrap items-center gap-2 mb-3">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-mc-amarillo/10 border border-mc-amarillo/20 text-mc-amarillo text-xs font-spartan font-bold uppercase tracking-wider">
+              <Zap className="w-3.5 h-3.5" />
+              <span>suite.mejoraok.com · En Vivo</span>
+            </div>
+            {dbStatus?.connected && (
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-spartan font-bold uppercase tracking-wider">
+                <Database className="w-3.5 h-3.5" />
+                <span>SQLite Núcleo Activo ({dbStatus.tableCount} Tablas)</span>
+              </div>
+            )}
           </div>
           <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-white tracking-tight uppercase font-spartan mb-3">
             Centro de Control <span className="text-mc-amarillo">de Conversión</span>

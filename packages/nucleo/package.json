@@ -1,0 +1,24 @@
+{
+  "name": "@mejora/nucleo",
+  "version": "1.0.0",
+  "description": "Motor de persistencia local SQLite para MejoraSuite",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "migrations"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "test": "node --test"
+  },
+  "dependencies": {
+    "better-sqlite3": "^11.10.0"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.11",
+    "@types/node": "^22.13.4",
+    "typescript": "^5.7.3"
+  }
+}
