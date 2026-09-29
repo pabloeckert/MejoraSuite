@@ -1,48 +1,50 @@
 {
-  "name": "@mejora/shell",
-  "version": "1.0.0",
-  "description": "Centro de Control y Shell Desktop — Mejora Continua Suite",
-  "type": "module",
-  "main": "electron/main.mjs",
-  "scripts": {
-    "dev": "vite",
-    "build": "tsc && vite build",
-    "preview": "vite preview",
-    "electron:dev": "electron .",
-    "electron:dist": "electron-builder"
-  },
-  "dependencies": {
-    "@mejora/nucleo": "*",
-    "clsx": "^2.1.1",
-    "lucide-react": "^0.475.0",
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1",
-    "tailwind-merge": "^2.6.0"
-  },
-  "devDependencies": {
-    "@types/node": "^22.13.4",
-    "@types/react": "^18.3.18",
-    "@types/react-dom": "^18.3.5",
-    "@vitejs/plugin-react": "^4.3.4",
-    "autoprefixer": "^10.4.20",
-    "electron": "^31.7.5",
-    "electron-builder": "^26.15.3",
-    "postcss": "^8.5.2",
-    "tailwindcss": "^3.4.17",
-    "typescript": "^5.7.3",
-    "vite": "^6.1.0"
-  },
-  "build": {
-    "appId": "com.mejoracontinua.mejorasuite",
-    "productName": "MejoraSuite",
-    "files": [
-      "dist/**/*",
-      "electron/**/*",
-      "public/**/*"
-    ],
-    "win": {
-      "target": "nsis",
-      "icon": "public/brand/icon.ico"
-    }
-  }
+    "name":  "@mejora/shell",
+    "version":  "1.0.0",
+    "description":  "Centro de Control y Shell Desktop — Mejora Continua Suite",
+    "type":  "module",
+    "main":  "electron/main.mjs",
+    "scripts":  {
+                    "dev":  "vite",
+                    "build":  "tsc \u0026\u0026 vite build",
+                    "preview":  "vite preview",
+                    "electron:dev":  "electron .",
+                    "electron:dist":  "electron-builder"
+                },
+    "dependencies":  {
+                         "@mejora/nucleo":  "*",
+                         "clsx":  "^2.1.1",
+                         "lucide-react":  "^0.475.0",
+                         "react":  "^18.3.1",
+                         "react-dom":  "^18.3.1",
+                         "tailwind-merge":  "^2.6.0",
+                         "@mejora/crm":  "*",
+                         "@mejora/contactos":  "*"
+                     },
+    "devDependencies":  {
+                            "@types/node":  "^22.13.4",
+                            "@types/react":  "^18.3.18",
+                            "@types/react-dom":  "^18.3.5",
+                            "@vitejs/plugin-react":  "^4.3.4",
+                            "autoprefixer":  "^10.4.20",
+                            "electron":  "^31.7.5",
+                            "electron-builder":  "^26.15.3",
+                            "postcss":  "^8.5.2",
+                            "tailwindcss":  "^3.4.17",
+                            "typescript":  "^5.7.3",
+                            "vite":  "^6.1.0"
+                        },
+    "build":  {
+                  "appId":  "com.mejoracontinua.mejorasuite",
+                  "productName":  "MejoraSuite",
+                  "files":  [
+                                "dist/**/*",
+                                "electron/**/*",
+                                "public/**/*"
+                            ],
+                  "win":  {
+                              "target":  "nsis",
+                              "icon":  "public/brand/icon.ico"
+                          }
+              }
 }

@@ -5,6 +5,8 @@ import { LauncherMatrix } from './components/LauncherMatrix';
 import { SystemHealthModal } from './components/SystemHealthModal';
 import { fetchTelemetry, TelemetryData } from './services/telemetryService';
 import { ShieldCheck, Compass, Zap, Layers, Database } from 'lucide-react';
+import { CrmNucleoWidget } from '@mejora/crm';
+import { ContactosNucleoWidget } from '@mejora/contactos';
 
 const initialTelemetry: TelemetryData = {
   totalContactos: 20,
@@ -105,6 +107,25 @@ export function App() {
 
         {/* Launcher & Hook Matrix */}
         <LauncherMatrix telemetry={telemetry} />
+
+        {/* Módulos Monorepo Integrados: @mejora/crm y @mejora/contactos con SQLite @mejora/nucleo */}
+        <section className="mt-8 space-y-4">
+          <div className="flex items-center gap-3 border-b border-white/10 pb-3">
+            <Database className="h-6 w-6 text-mc-amarillo" />
+            <div>
+              <h2 className="text-xl font-bold text-white tracking-wide">
+                Integración de Espacios de Trabajo (Monorepo @mejora)
+              </h2>
+              <p className="text-xs text-slate-400">
+                Componentes de <span className="text-mc-amarillo font-semibold">@mejora/crm</span> y <span className="text-mc-azul-light font-semibold">@mejora/contactos</span> leyendo y escribiendo en la base de datos local SQLite <span className="text-emerald-400 font-semibold">@mejora/nucleo</span>.
+              </p>
+            </div>
+          </div>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <CrmNucleoWidget />
+            <ContactosNucleoWidget />
+          </div>
+        </section>
       </main>
 
       {/* Health Modal */}

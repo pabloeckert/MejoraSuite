@@ -1,0 +1,5 @@
+# REGLAS OPERATIVAS ESTRICTAS DE MEJORASUITE
+1. ALCANCE: Tu entorno de trabajo está estrictamente limitado a C:\github\MejoraSuite. PROHIBIDO buscar, leer, editar o ejecutar scripts fuera de este árbol de directorios.
+2. EXCLUSIVIDAD: Entorno 100% Google AI Pro y modelos locales. Prohibido introducir, referenciar o usar APIs, SDKs o variables de Anthropic / Claude.
+3. ZERO TRUST: Prohibido asumir que el código funciona solo porque compila. Toda modificación debe validarse en runtime con pruebas reales.
+4. AUTORIDAD: Respeta el rol de C-Suite de la Arquitecta Técnica y las decisiones del Director General.

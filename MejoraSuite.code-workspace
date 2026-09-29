@@ -1,0 +1,11 @@
+{
+  "folders": [
+    {
+      "name": "MejoraSuite",
+      "path": "."
+    }
+  ],
+  "settings": {
+    "terminal.integrated.cwd": "C:\\\\github\\\\MejoraSuite"
+  }
+}

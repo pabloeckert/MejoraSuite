@@ -2,7 +2,7 @@ import path from 'node:path'
 import fs from 'node:fs'
 import Database from 'better-sqlite3'
 import { runMigrations } from './migrate'
-import type { DbStatus } from './types'
+import type { DbStatus, ClienteRecord, NegocioRecord } from './types'
 
 let db: Database.Database | null = null
 let currentDbPath: string = ''
@@ -12,7 +12,7 @@ function resolveDefaultDbPath(): string {
     return process.env.MEJORA_DB_PATH
   }
   try {
-    // Intentar resolver app de Electron si estÃ¡ en ejecuciÃ³n
+    // Intentar resolver app de Electron si está en ejecución
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     const electron = require('electron')
     const app = electron.app || electron.remote?.app
@@ -21,7 +21,7 @@ function resolveDefaultDbPath(): string {
       return path.join(userData, 'nucleo.db')
     }
   } catch {
-    // Electron no disponible en contexto Node estÃ¡ndar
+    // Electron no disponible en contexto Node estándar
   }
   const appData = process.env.APPDATA || process.env.LOCALAPPDATA || process.cwd()
   const suiteData = path.join(appData, 'MejoraSuite')
@@ -64,6 +64,8 @@ export function connectDatabase(customDbPath?: string, customMigrationsDir?: str
     runMigrations(db, migrationsDir)
   }
 
+  seedDemoDataIfEmpty()
+
   return db
 }
 
@@ -95,5 +97,86 @@ export function getStatus(targetDb?: Database.Database): DbStatus {
     tableCount: rows.length,
     tables: rows.map((r) => r.name),
     dbPath: currentDbPath
+  }
+}
+
+export function getClientes(): ClienteRecord[] {
+  const activeDb = db || connectDatabase()
+  return activeDb.prepare('SELECT id, nombre, whatsapp, instagram_tiktok, empresa, cargo, tag, notas FROM Cliente ORDER BY id DESC').all() as ClienteRecord[]
+}
+
+export function createCliente(cliente: Partial<ClienteRecord>): ClienteRecord {
+  const activeDb = db || connectDatabase()
+  const stmt = activeDb.prepare(
+    'INSERT INTO Cliente (nombre, whatsapp, instagram_tiktok, empresa, cargo, tag, notas) VALUES (?, ?, ?, ?, ?, ?, ?)'
+  )
+  const info = stmt.run(
+    cliente.nombre || 'Sin Nombre',
+    cliente.whatsapp || null,
+    cliente.instagram_tiktok || null,
+    cliente.empresa || null,
+    cliente.cargo || null,
+    cliente.tag || 'ocasional',
+    cliente.notas || null
+  )
+  return {
+    id: Number(info.lastInsertRowid),
+    nombre: cliente.nombre || 'Sin Nombre',
+    whatsapp: cliente.whatsapp || null,
+    instagram_tiktok: cliente.instagram_tiktok || null,
+    empresa: cliente.empresa || null,
+    cargo: cliente.cargo || null,
+    tag: cliente.tag || 'ocasional',
+    notas: cliente.notas || null
+  }
+}
+
+export function getNegocios(): NegocioRecord[] {
+  const activeDb = db || connectDatabase()
+  return activeDb.prepare('SELECT id, nombre, rubro, moneda, catalogo_activo FROM Negocio ORDER BY id ASC').all() as NegocioRecord[]
+}
+
+export function createNegocio(negocio: Partial<NegocioRecord>): NegocioRecord {
+  const activeDb = db || connectDatabase()
+  const stmt = activeDb.prepare(
+    'INSERT INTO Negocio (nombre, rubro, moneda, catalogo_activo) VALUES (?, ?, ?, ?)'
+  )
+  const info = stmt.run(
+    negocio.nombre || 'Negocio Principal',
+    negocio.rubro || 'General',
+    negocio.moneda || 'ARS',
+    negocio.catalogo_activo || 'ambos'
+  )
+  return {
+    id: Number(info.lastInsertRowid),
+    nombre: negocio.nombre || 'Negocio Principal',
+    rubro: negocio.rubro || 'General',
+    moneda: negocio.moneda || 'ARS',
+    catalogo_activo: negocio.catalogo_activo || 'ambos'
+  }
+}
+
+export function querySql<T = any>(sql: string, params: any[] = []): T[] {
+  const activeDb = db || connectDatabase()
+  return activeDb.prepare(sql).all(...params) as T[]
+}
+
+export function seedDemoDataIfEmpty(): void {
+  if (!db) return
+
+  const clientCount = (db.prepare('SELECT COUNT(*) as c FROM Cliente').get() as { c: number }).c
+  if (clientCount === 0) {
+    const insert = db.prepare(
+      'INSERT INTO Cliente (nombre, whatsapp, instagram_tiktok, empresa, cargo, tag, notas) VALUES (?, ?, ?, ?, ?, ?, ?)'
+    )
+    insert.run('Alvear Abogados SRL', '+5491145229001', '@alvearabogados', 'Estudio Alvear', 'Socio Gerente', 'frecuente', 'Cliente corporativo clave en MejoraSuite')
+    insert.run('Distribuidora El Litoral', '+5493424118822', '@distrilitoral', 'El Litoral SA', 'Director Comercial', 'frecuente', 'Integrado con pipeline de WhatsApp y facturación')
+    insert.run('Dra. Mariana Costa', '+5491167733221', '@dramarianacosta', 'Clínica Parque', 'Directora Médica', 'ocasional', 'Contacto originado en MejoraContactos')
+  }
+
+  const negocioCount = (db.prepare('SELECT COUNT(*) as c FROM Negocio').get() as { c: number }).c
+  if (negocioCount === 0) {
+    const insert = db.prepare('INSERT INTO Negocio (nombre, rubro, moneda, catalogo_activo) VALUES (?, ?, ?, ?)')
+    insert.run('Mejora Continua Hub', 'Consultoría y Software', 'ARS', 'ambos')
   }
 }

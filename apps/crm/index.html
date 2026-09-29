@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover" />
+    <title>MejoraCRM — Mejora Continua®</title>
+    <meta name="description" content="CRM desarrollado por Mejora Continua® para gestión de clientes, productos e interacciones.">
+    <meta name="author" content="Mejora Continua®" />
+    <meta name="theme-color" content="#1A3D84" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="MejoraCRM" />
+    <meta name="format-detection" content="telephone=no" />
+
+    <link rel="manifest" href="/manifest.json" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+    <link rel="icon" href="/favicon-32x32.png" type="image/png" sizes="32x32" />
+    <link rel="icon" href="/favicon-16x16.png" type="image/png" sizes="16x16" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:site" content="@mejoraok" />
+
+    <meta property="og:title" content="MejoraCRM — Mejora Continua®">
+    <meta name="twitter:title" content="MejoraCRM — Mejora Continua®">
+    <meta property="og:description" content="CRM desarrollado por Mejora Continua® para gestión de clientes, productos e interacciones.">
+    <meta name="twitter:description" content="CRM desarrollado por Mejora Continua® para gestión de clientes, productos e interacciones.">
+    <meta property="og:url" content="https://crm.mejoraok.com" />
+    <meta property="og:image" content="https://crm.mejoraok.com/icon-512.png" />
+    <meta name="twitter:image" content="https://crm.mejoraok.com/icon-512.png" />
+  </head>
+
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+    <script>
+      // Register Service Worker
+      if ("serviceWorker" in navigator) {
+        window.addEventListener("load", () => {
+          navigator.serviceWorker
+            .register("/sw.js")
+            .then((reg) => console.log("[PWA] SW registered:", reg.scope))
+            .catch((err) => console.warn("[PWA] SW registration failed:", err));
+        });
+      }
+    </script>
+  </body>
+</html>

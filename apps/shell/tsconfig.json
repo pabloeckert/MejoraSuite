@@ -1,24 +1,41 @@
 {
-  "compilerOptions": {
-    "target": "ES2022",
-    "useDefineForClassFields": true,
-    "lib": ["ES2022", "DOM", "DOM.Iterable"],
-    "module": "ESNext",
-    "skipLibCheck": true,
-    "moduleResolution": "bundler",
-    "allowImportingTsExtensions": false,
-    "resolveJsonModule": true,
-    "isolatedModules": true,
-    "noEmit": true,
-    "jsx": "react-jsx",
-    "strict": false,
-    "noUnusedLocals": false,
-    "noUnusedParameters": false,
-    "noFallthroughCasesInSwitch": true,
-    "baseUrl": ".",
-    "paths": {
-      "@/*": ["./src/*"]
-    }
-  },
-  "include": ["src"]
+    "compilerOptions":  {
+                            "target":  "ES2022",
+                            "useDefineForClassFields":  true,
+                            "lib":  [
+                                        "ES2022",
+                                        "DOM",
+                                        "DOM.Iterable"
+                                    ],
+                            "module":  "ESNext",
+                            "skipLibCheck":  true,
+                            "moduleResolution":  "bundler",
+                            "allowImportingTsExtensions":  false,
+                            "resolveJsonModule":  true,
+                            "isolatedModules":  true,
+                            "noEmit":  true,
+                            "jsx":  "react-jsx",
+                            "strict":  false,
+                            "noUnusedLocals":  false,
+                            "noUnusedParameters":  false,
+                            "noFallthroughCasesInSwitch":  true,
+                            "baseUrl":  ".",
+                            "paths":  {
+                                          "@/*":  [
+                                                      "./src/*"
+                                                  ],
+                                          "@mejora/crm":  [
+                                                              "../crm/src/index.ts"
+                                                          ],
+                                          "@mejora/contactos":  [
+                                                                    "../contactos/src/index.ts"
+                                                                ],
+                                          "@mejora/nucleo":  [
+                                                                 "../../packages/nucleo/src/index.ts"
+                                                             ]
+                                      }
+                        },
+    "include":  [
+                    "src"
+                ]
 }

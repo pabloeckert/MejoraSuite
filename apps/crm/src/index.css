@@ -1,0 +1,234 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@font-face {
+  font-family: 'Bw Modelica';
+  src: url('/fonts/BwModelica-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Bw Modelica';
+  src: url('/fonts/BwModelica-Medium.woff2') format('woff2');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Bw Modelica';
+  src: url('/fonts/BwModelica-Bold.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'League Spartan';
+  src: url('/fonts/LeagueSpartan-Bold.otf') format('opentype');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@layer base {
+  :root {
+    /* MC — Blanco Puro */
+    --background: 0 0% 100%;
+    --foreground: 0 0% 17%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 5%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 5%;
+
+    /* Primary: Azul MC 2026 #1A3D84 */
+    --primary: 220 65% 31%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 214 30% 94%;
+    --secondary-foreground: 237 96% 18%;
+
+    /* Muted: Gris Plomo */
+    --muted: 0 0% 92%;
+    --muted-foreground: 0 0% 40%;
+
+    /* Accent: Amarillo MC 2026 #F7CC13 */
+    --accent: 47 94% 52%;
+    --accent-foreground: 0 0% 5%;
+
+    /* Destructive: Rojo MC 2026 #E1061E */
+    --destructive: 350 97% 46%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 214 20% 88%;
+    --input: 214 20% 88%;
+    --ring: 220 65% 31%;
+
+    --radius: 0.625rem;
+
+    /* Sidebar: Azul MC 2026 #1A3D84 */
+    --sidebar-background: 220 65% 31%;
+    --sidebar-foreground: 0 0% 95%;
+    --sidebar-primary: 45 89% 52%;
+    --sidebar-primary-foreground: 0 0% 5%;
+    /* Ítem activo: azul medio */
+    --sidebar-accent: 214 67% 28%;
+    --sidebar-accent-foreground: 0 0% 100%;
+    --sidebar-border: 237 80% 24%;
+    --sidebar-ring: 45 89% 52%;
+
+    /* Indicadores */
+    --success: 122 44% 34%;
+    --success-foreground: 0 0% 100%;
+    --warning: 28 89% 54%;
+    --warning-foreground: 0 0% 100%;
+
+    --brand-navy: 220 65% 31%;
+    --brand-blue: 214 67% 33%;
+    --brand-gold: 47 94% 52%;
+    --brand-red: 350 97% 46%;
+    --brand-gray: 0 0% 40%;
+    --brand-black: 0 0% 5%;
+  }
+
+  .dark {
+    --background: 237 40% 7%;
+    --foreground: 0 0% 92%;
+    --card: 237 35% 11%;
+    --card-foreground: 0 0% 92%;
+    --popover: 237 35% 11%;
+    --popover-foreground: 0 0% 92%;
+    --primary: 220 55% 55%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 237 30% 16%;
+    --secondary-foreground: 0 0% 92%;
+    --muted: 237 30% 16%;
+    --muted-foreground: 0 0% 55%;
+    --accent: 47 94% 55%;
+    --accent-foreground: 0 0% 5%;
+    --destructive: 350 80% 60%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 237 25% 20%;
+    --input: 237 25% 20%;
+    --ring: 220 55% 55%;
+    --sidebar-background: 220 55% 12%;
+    --sidebar-foreground: 0 0% 90%;
+    --sidebar-primary: 45 89% 55%;
+    --sidebar-primary-foreground: 0 0% 5%;
+    --sidebar-accent: 214 50% 20%;
+    --sidebar-accent-foreground: 0 0% 92%;
+    --sidebar-border: 237 40% 16%;
+    --sidebar-ring: 45 89% 55%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+    font-family: 'Bw Modelica', 'Inter', sans-serif;
+  }
+}
+
+@layer utilities {
+  .animate-fade-in {
+    animation: fadeIn 0.4s ease-out forwards;
+  }
+  .animate-slide-up {
+    animation: slideUp 0.4s ease-out forwards;
+  }
+  .animate-scale-in {
+    animation: scaleIn 0.3s ease-out forwards;
+  }
+  .animate-count-up {
+    animation: countUp 0.6s ease-out forwards;
+  }
+  .stagger-1 { animation-delay: 0.05s; }
+  .stagger-2 { animation-delay: 0.1s; }
+  .stagger-3 { animation-delay: 0.15s; }
+  .stagger-4 { animation-delay: 0.2s; }
+  .stagger-5 { animation-delay: 0.25s; }
+  .stagger-6 { animation-delay: 0.3s; }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes countUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ===== PWA & Mobile improvements ===== */
+
+/* Ensure safe area insets for notch devices */
+@supports (padding: env(safe-area-inset-top)) {
+  body {
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+  }
+}
+
+/* Minimum touch target size: 44x44px (WCAG 2.5.8) */
+@layer base {
+  button, a, [role="button"], input[type="checkbox"], input[type="radio"], select {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  /* Compact buttons can be smaller on desktop */
+  @media (min-width: 768px) {
+    button[class*="h-8"], button[class*="h-9"], a[class*="h-8"], a[class*="h-9"] {
+      min-height: auto;
+    }
+  }
+}
+
+/* Mobile-first table scrolling */
+@layer utilities {
+  .table-container {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+  }
+
+  /* Hide scrollbar on mobile for cleaner look */
+  @media (max-width: 767px) {
+    .table-container::-webkit-scrollbar {
+      display: none;
+    }
+  }
+}
+
+/* Prevent zoom on input focus (iOS) */
+@media (max-width: 767px) {
+  input, select, textarea {
+    font-size: 16px !important;
+  }
+}
+
+/* PWA standalone mode adjustments */
+@media (display-mode: standalone) {
+  body {
+    /* Extra padding for standalone mode */
+    padding-top: max(env(safe-area-inset-top), 8px);
+  }
+}

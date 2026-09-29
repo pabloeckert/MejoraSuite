@@ -1,0 +1,46 @@
+name: Sincronizar contactos (pull)
+
+# Llama a la Edge Function pull-contactos cada 15 minutos para traer
+# contactos nuevos/modificados desde MejoraContactos (contactos_finales).
+# Ver INFORME-SINCRONIZACION-CONTACTOS.md para el diseño completo y los
+# pasos exactos de puesta en marcha (esto no hace nada hasta que se
+# configuren los 3 secrets de abajo en Settings → Secrets and variables →
+# Actions de este repo).
+#
+# Autenticación de la función: la anon key pública (SUPABASE_ANON_KEY,
+# ya es pública por diseño, sirve como Bearer para pasar la verificación
+# de JWT que Supabase exige por default) + un secreto propio
+# (CRON_SECRET) que valida la función misma -- ver pull-contactos/index.ts.
+
+on:
+  schedule:
+    - cron: "*/15 * * * *"
+  workflow_dispatch: {}
+
+concurrency:
+  group: sync-contactos
+  cancel-in-progress: false
+
+jobs:
+  pull:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Llamar a pull-contactos
+        run: |
+          if [ -z "${{ secrets.SUPABASE_FUNCTIONS_URL }}" ] || [ -z "${{ secrets.SUPABASE_ANON_KEY }}" ] || [ -z "${{ secrets.CRON_SECRET }}" ]; then
+            echo "::warning::Faltan secrets (SUPABASE_FUNCTIONS_URL / SUPABASE_ANON_KEY / CRON_SECRET) -- ver INFORME-SINCRONIZACION-CONTACTOS.md. Saliendo sin error para no spamear con runs rojos hasta que se configuren."
+            exit 0
+          fi
+          respuesta=$(curl -sS -w "\n%{http_code}" -X POST \
+            "${{ secrets.SUPABASE_FUNCTIONS_URL }}/pull-contactos" \
+            -H "Authorization: Bearer ${{ secrets.SUPABASE_ANON_KEY }}" \
+            -H "X-Cron-Secret: ${{ secrets.CRON_SECRET }}" \
+            -H "Content-Type: application/json")
+          codigo="${respuesta##*$'\n'}"
+          cuerpo="${respuesta%$'\n'*}"
+          echo "HTTP $codigo"
+          echo "$cuerpo"
+          if [ "$codigo" -ge 400 ]; then
+            echo "::error::pull-contactos respondió HTTP $codigo"
+            exit 1
+          fi

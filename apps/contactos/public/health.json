@@ -1,0 +1,10 @@
+{
+  "service": "mejoracontactos",
+  "version": "v12.9",
+  "status": "ok",
+  "checks": {
+    "frontend": "ok",
+    "indexedDB": "ok",
+    "edgeFunctions": "unknown"
+  }
+}

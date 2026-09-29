@@ -11,7 +11,7 @@ import { app, BrowserWindow, ipcMain, shell } from 'electron'
 import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { connectDatabase, getDatabase, getStatus, closeDatabase } from '@mejora/nucleo'
+import { connectDatabase, getDatabase, getStatus, closeDatabase, getClientes, createCliente, getNegocios, querySql } from '@mejora/nucleo'
 
 let dbInstance = null
 
@@ -174,7 +174,12 @@ function createWindow() {
     },
   })
   mainWindow.setMenuBarVisibility(false)
-  mainWindow.loadFile(path.join(__dirname, '..', 'public', 'index.html'))
+  const distIndex = path.join(__dirname, '..', 'dist', 'index.html');
+  if (fs.existsSync(distIndex)) {
+    mainWindow.loadFile(distIndex);
+  } else {
+    mainWindow.loadFile(path.join(__dirname, '..', 'public', 'index.html'));
+  }
 
   mainWindow.webContents.on('did-finish-load', async () => {
     const initialData = await fetchTelemetry()
@@ -219,6 +224,22 @@ function registerIpcHandlers() {
 
   ipcMain.handle('suite:getTelemetry', async () => {
     return await fetchTelemetry()
+  })
+
+    ipcMain.handle('suite:db:getClientes', () => {
+    return getClientes()
+  })
+
+  ipcMain.handle('suite:db:createCliente', (_e, cliente) => {
+    return createCliente(cliente)
+  })
+
+  ipcMain.handle('suite:db:getNegocios', () => {
+    return getNegocios()
+  })
+
+  ipcMain.handle('suite:db:query', (_e, sql, params) => {
+    return querySql(sql, params)
   })
 
   ipcMain.handle('suite:getDbStatus', () => {
