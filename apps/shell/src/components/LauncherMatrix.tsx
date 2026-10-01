@@ -18,6 +18,7 @@ import { TelemetryData } from '../services/telemetryService';
 
 interface LauncherMatrixProps {
   telemetry: TelemetryData;
+  onNavigate?: (view: 'crm' | 'contactos' | 'sm') => void;
 }
 
 interface ModuleCard {
@@ -37,7 +38,7 @@ interface ModuleCard {
   actionText: string;
 }
 
-export const LauncherMatrix: React.FC<LauncherMatrixProps> = ({ telemetry }) => {
+export const LauncherMatrix: React.FC<LauncherMatrixProps> = ({ telemetry, onNavigate }) => {
   const modules: ModuleCard[] = [
     {
       id: 'diagnostico',
@@ -49,8 +50,8 @@ export const LauncherMatrix: React.FC<LauncherMatrixProps> = ({ telemetry }) => 
       badge: 'Boca de Captura Principal',
       badgeColor: 'bg-mc-amarillo/15 text-mc-amarillo border-mc-amarillo/30',
       description: 'Test de diagnóstico empresarial en 8 dimensiones. Scoring automático, informe PDF y derivación directa a WhatsApp.',
-      conversionImpact: 'Captura Leads Fríos · Directo a contactos-api',
-      statusText: 'Vercel · En Producción',
+      conversionImpact: 'Captura Leads Fríos — Directo a contactos-api',
+      statusText: 'Vercel — En Producción',
       statusOnline: true,
       actionText: 'Abrir Diagnóstico',
     },
@@ -64,8 +65,8 @@ export const LauncherMatrix: React.FC<LauncherMatrixProps> = ({ telemetry }) => 
       badge: 'Tablero Nash & Poder',
       badgeColor: 'bg-cyan-500/15 text-cyan-300 border-cyan-500/30',
       description: 'Simulador macro y teoría de juegos 2x2. Grafo interactivo de actores e indicadores BCRA/INDEC en vivo con CTA al Diagnóstico 4D.',
-      conversionImpact: 'Conversión C-Level · Derivación a Consultoría',
-      statusText: 'GitHub Pages · En Línea',
+      conversionImpact: 'Conversión C-Level — Derivación a Consultoría',
+      statusText: 'GitHub Pages — En Línea',
       statusOnline: true,
       actionText: 'Abrir Tablero Nash',
     },
@@ -74,15 +75,15 @@ export const LauncherMatrix: React.FC<LauncherMatrixProps> = ({ telemetry }) => 
       category: 'Ventas & Deals',
       categoryColor: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30',
       title: 'MejoraCRM',
-      targetUrl: 'https://crm.mejoraok.com',
+      targetUrl: 'internal://crm',
       icon: <Briefcase className="w-6 h-6 text-emerald-400" />,
-      badge: 'Núcleo Comercial Rector',
+      badge: 'Ventas & Pipeline Local',
       badgeColor: 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30',
-      description: 'Gestión de pipeline de ventas, cotizaciones, seguimiento comercial e ingesta periódica de prospectos mediante cron cada 15 min.',
-      conversionImpact: 'Maduración & Cierre · clientes / deals',
-      statusText: 'Vercel · En Producción',
+      description: 'Gestión de pipeline de ventas, cotizaciones, Deals en SQLite y fuente comercial soberana sin dependencia cloud.',
+      conversionImpact: 'Maduración & Cierre — deals locales / SQLite',
+      statusText: 'Integrado · SQLite Local',
       statusOnline: true,
-      actionText: 'Acceder al CRM',
+      actionText: 'Abrir CRM Local',
     },
     {
       id: 'app',
@@ -94,8 +95,8 @@ export const LauncherMatrix: React.FC<LauncherMatrixProps> = ({ telemetry }) => 
       badge: 'Portal Clientes PWA',
       badgeColor: 'bg-blue-500/15 text-blue-300 border-blue-500/30',
       description: 'Portal privado para líderes y miembros de comunidad. Muro interactivo, contenidos exclusivos y test Business Mirror gamer.',
-      conversionImpact: 'LTV & Fidelización · Sync usuarios a contactos-api',
-      statusText: 'Vercel · PWA Activa',
+      conversionImpact: 'LTV & Fidelización — Sync usuarios a contactos-api',
+      statusText: 'Vercel — PWA Activa',
       statusOnline: true,
       actionText: 'Ingresar a MejoraApp',
     },
@@ -104,30 +105,30 @@ export const LauncherMatrix: React.FC<LauncherMatrixProps> = ({ telemetry }) => 
       category: 'Contenidos B2B',
       categoryColor: 'bg-purple-500/10 text-purple-400 border-purple-500/30',
       title: 'MejoraSM',
-      targetUrl: 'https://mejorasm.mejoraok.com/app/',
-      icon: <Share2 className="w-6 h-6 text-purple-400" />,
-      badge: 'Social Media & Inbound',
-      badgeColor: 'bg-purple-500/15 text-purple-300 border-purple-500/30',
-      description: 'Generación con IA, autopublicación multicanal (LinkedIn, IG, FB) y bandeja de entrada clasificada con LLM para derivar prospectos.',
-      conversionImpact: 'Tracción Social · DMs calificados a CRM',
-      statusText: 'Cloudflare CNAME · En Línea',
+      targetUrl: 'internal://sm',
+      icon: <Share2 className="w-6 h-6 text-indigo-400" />,
+      badge: 'Social Media & SQLite',
+      badgeColor: 'bg-indigo-500/15 text-indigo-300 border-indigo-500/30',
+      description: 'Generación con IA, autopublicación multicanal (LinkedIn, IG, FB), propuestas y calendario editorial conectado a SQLite.',
+      conversionImpact: 'Tracción Social — Propuestas y Contenidos locales',
+      statusText: 'Integrado · SQLite Local',
       statusOnline: true,
-      actionText: 'Panel de Redes',
+      actionText: 'Abrir Social Media Local',
     },
     {
       id: 'contactos',
       category: 'Base & Limpieza',
       categoryColor: 'bg-teal-500/10 text-teal-400 border-teal-500/30',
       title: 'MejoraContactos',
-      targetUrl: 'https://pabloeckert.github.io/MejoraContactos/',
+      targetUrl: 'internal://contactos',
       icon: <Sparkles className="w-6 h-6 text-teal-400" />,
       badge: 'Truth Engine de Identidad',
       badgeColor: 'bg-teal-500/15 text-teal-300 border-teal-500/30',
-      description: 'Deduplicación algorítmica por clusters de similitud, resolución universal de persona_id y limpieza de bases con 12 LLMs.',
-      conversionImpact: 'Calidad del Dato · Alimenta a todo el ecosistema',
-      statusText: 'GitHub Pages · En Línea',
+      description: 'Deduplicación algorítmica por clusters de similitud, resolución de personas y base unificada en SQLite local.',
+      conversionImpact: 'Calidad del Dato — SQLite Persona unificada',
+      statusText: 'Integrado · SQLite Local',
       statusOnline: true,
-      actionText: 'Abrir Truth Engine',
+      actionText: 'Abrir Contactos Local',
     },
     {
       id: 'ws',
@@ -140,7 +141,7 @@ export const LauncherMatrix: React.FC<LauncherMatrixProps> = ({ telemetry }) => 
       badge: 'Outreach 1 a 1 Baileys',
       badgeColor: 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30',
       description: 'Mensajería directa y personalizada para listas conocidas. Auto-respuestas inteligentes con reporte automático sincronizado al CRM.',
-      conversionImpact: 'Contacto Directo · Sincronización de respuestas',
+      conversionImpact: 'Contacto Directo — Sincronización de respuestas',
       statusText: telemetry.wsLocalOnline ? 'Bridge :4180 Conectado' : 'App de Escritorio (Protocolo)',
       statusOnline: telemetry.wsLocalOnline,
       actionText: 'Lanzar MejoraWS',
@@ -155,18 +156,29 @@ export const LauncherMatrix: React.FC<LauncherMatrixProps> = ({ telemetry }) => 
       badge: 'Front Door Institucional',
       badgeColor: 'bg-white/10 text-white border-white/20',
       description: 'Sitio institucional oficial de Mejora Continua. Manifiesto, oferta de servicios de consultoría y derivador estratégico.',
-      conversionImpact: 'Autoridad & Tráfico · Bifurcador a Diagnóstico',
-      statusText: 'Hostinger · Dominio Raíz',
+      conversionImpact: 'Autoridad & Tráfico — Bifurcador a Diagnóstico',
+      statusText: 'Hostinger — Dominio Raíz',
       statusOnline: true,
       actionText: 'Visitar mejoraok.com',
     },
   ];
 
   const handleLaunch = (mod: ModuleCard) => {
+    if (mod.id === 'crm') {
+      onNavigate?.('crm');
+      return;
+    }
+    if (mod.id === 'contactos') {
+      onNavigate?.('contactos');
+      return;
+    }
+    if (mod.id === 'sm') {
+      onNavigate?.('sm');
+      return;
+    }
     if (mod.isProtocol) {
       window.location.href = mod.targetUrl;
       setTimeout(() => {
-        // Fallback info if protocol handler is not installed
         console.info('[MejoraSuite] Intentando abrir protocolo mejoraws://');
       }, 500);
     } else {
@@ -182,7 +194,7 @@ export const LauncherMatrix: React.FC<LauncherMatrixProps> = ({ telemetry }) => 
             Matriz de Lanzadores y Ganchos de Conversión
           </h2>
           <p className="text-sm text-slate-400">
-            Ecosistema articulado horizontalmente: acceso directo a los 8 módulos operativos.
+            Ecosistema articulado horizontalmente: acceso directo a los módulos operativos locales y remotos.
           </p>
         </div>
       </div>
@@ -201,27 +213,27 @@ export const LauncherMatrix: React.FC<LauncherMatrixProps> = ({ telemetry }) => 
                 >
                   {mod.category}
                 </span>
-                <span className="flex items-center gap-1 text-[11px] font-medium text-slate-400">
+                <span className="flex items-center gap-1.5 text-[11px] font-medium text-slate-300">
                   <span
                     className={`w-1.5 h-1.5 rounded-full ${
                       mod.statusOnline ? 'bg-emerald-400' : 'bg-slate-500'
                     }`}
                   />
-                  <span className="text-[10px] truncate max-w-[120px]">{mod.statusText}</span>
+                  {mod.statusText}
                 </span>
               </div>
 
-              {/* Title & Icon */}
-              <div className="flex items-center gap-3 mb-2.5">
-                <div className="p-2.5 rounded-xl bg-mc-azul-dark/90 border border-white/10 group-hover:border-mc-amarillo/30 transition-colors">
+              {/* Title & Badge */}
+              <div className="flex items-start gap-3 mb-2.5">
+                <div className="p-2.5 rounded-xl bg-mc-azul-surface border border-white/10 group-hover:border-mc-amarillo/30 transition-colors">
                   {mod.icon}
                 </div>
                 <div>
-                  <h3 className="text-base font-bold text-white group-hover:text-mc-amarillo transition-colors">
+                  <h3 className="text-base font-bold text-white tracking-wide group-hover:text-mc-amarillo transition-colors">
                     {mod.title}
                   </h3>
                   <span
-                    className={`inline-block text-[9px] font-semibold px-1.5 py-0.2 rounded border mt-0.5 ${mod.badgeColor}`}
+                    className={`inline-block mt-0.5 text-[10px] px-2 py-0.5 rounded border ${mod.badgeColor}`}
                   >
                     {mod.badge}
                   </span>
@@ -232,33 +244,27 @@ export const LauncherMatrix: React.FC<LauncherMatrixProps> = ({ telemetry }) => 
               <p className="text-xs text-slate-300 leading-relaxed mb-3">
                 {mod.description}
               </p>
-            </div>
 
-            <div>
-              {/* Conversion Impact Badge */}
-              <div className="p-2 rounded-xl bg-white/5 border border-white/5 mb-4">
-                <div className="text-[10px] text-slate-400 font-spartan uppercase tracking-wider">
-                  Impacto en Conversión
-                </div>
-                <div className="text-xs font-semibold text-emerald-300 flex items-center gap-1 mt-0.5">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-                  <span className="truncate">{mod.conversionImpact}</span>
-                </div>
+              {/* Conversion Impact */}
+              <div className="text-[11px] font-semibold text-mc-amarillo/90 bg-mc-amarillo/5 border border-mc-amarillo/15 rounded-lg px-2.5 py-1 mb-4">
+                {mod.conversionImpact}
               </div>
-
-              {/* Action Button */}
-              <button
-                onClick={() => handleLaunch(mod)}
-                className="w-full py-2.5 px-4 rounded-xl bg-mc-azul hover:bg-mc-azul-hover text-white text-xs font-bold font-spartan uppercase tracking-wider flex items-center justify-center gap-2 transition-all group-hover:bg-mc-amarillo group-hover:text-mc-negro shadow-md cursor-pointer"
-              >
-                <span>{mod.actionText}</span>
-                {mod.isProtocol ? (
-                  <Radio className="w-3.5 h-3.5" />
-                ) : (
-                  <ExternalLink className="w-3.5 h-3.5" />
-                )}
-              </button>
             </div>
+
+            {/* CTA Button */}
+            <button
+              onClick={() => handleLaunch(mod)}
+              className="w-full mt-2 flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl font-spartan text-xs font-bold uppercase tracking-wider bg-mc-azul-surface hover:bg-mc-amarillo hover:text-mc-slate text-slate-200 border border-white/15 hover:border-mc-amarillo transition-all duration-200 cursor-pointer shadow-sm group-hover:shadow"
+            >
+              <span>{mod.actionText}</span>
+              {mod.id === 'crm' || mod.id === 'contactos' || mod.id === 'sm' ? (
+                <ChevronRight className="w-3.5 h-3.5" />
+              ) : mod.isProtocol ? (
+                <Radio className="w-3.5 h-3.5" />
+              ) : (
+                <ExternalLink className="w-3.5 h-3.5" />
+              )}
+            </button>
           </div>
         ))}
       </div>

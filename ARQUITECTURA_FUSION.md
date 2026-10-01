@@ -261,3 +261,18 @@ C:\github\MejoraSuite\
    - Migrar `MejoraSM` conectando el calendario de publicaciones a SQLite local.
 4. **Fase D — Distribución y Empaquetado:**
    - Configurar `electron-builder` en `apps/desktop/` para generar un único ejecutable portable y con instalador NSIS para Windows 11.
+
+---
+
+## 7. Estado de Situación Real al Cierre de Jornada (30 de Septiembre de 2026)
+
+### Hitos Consolidados en Código y en Disco
+1. **Monorepo Operativo (5/5 Paquetes):** Turborepo orquesta y compila exitosamente los 5 workspaces (`@mejora/nucleo`, `@mejora/shell`, `@mejora/crm`, `@mejora/contactos`, `@mejora/sm`).
+2. **Persistencia Local Soberana:** Base de datos SQLite (`better-sqlite3`) en `%APPDATA%\@mejora\shell\nucleo.db` operando con 16 tablas bajo Migraciones `001_initial_schema.sql`, `002_suite_unified.sql` y `003_suite_sm.sql`.
+3. **Desconexión Cloud (Desktop Bypass):** Supabase GoTrue e IndexedDB desacoplados en modo de escritorio. Acceso directo a SQLite mediante adaptadores locales (`nucleoAdapter.ts`) y puente IPC (`window.suite.db.*`).
+4. **Enrutamiento Visual en Shell:** Pestañas activas para Hub Central, CRM, Contactos y Social Media, con recarga y retorno fluidos.
+
+### Próximo Paso (Pendiente)
+- **Integración del Motor MejoraWS:** Extraer el motor Baileys (sesiones locales en `userData/auth` y Bridge HTTP `127.0.0.1:4180`) como servicio de fondo orquestado por Electron Main, y desarrollar un panel nativo en React 18 dentro del Shell para evitar incompatibilidades con React 19 / Tailwind v4.
+- **Migración 004 en Nucleo:** Mapear las campañas y miembros de WhatsApp desde `lowdb` (`data.json`) a tablas relacionales en `nucleo.db`.
+

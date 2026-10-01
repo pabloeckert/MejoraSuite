@@ -16,6 +16,9 @@ const PAGE_SIZE = 50;
  * se considera exitosa. Ver INFORME-SINCRONIZACION-CONTACTOS.md.
  */
 export function pushContactoBestEffort(clientId: string): void {
+  if (typeof window !== "undefined" && Boolean((window as any).suite?.db)) {
+    return; // Bypass completo en entorno local Electron con SQLite
+  }
   supabase.functions
     .invoke("push-contacto", { body: { client_id: clientId } })
     .then(({ error }) => {
@@ -48,6 +51,29 @@ export function useClientsInfinite() {
     queryKey: ["clients-infinite", demoMode ? "demo" : "live"],
     queryFn: async ({ pageParam = 0 }) => {
       if (demoMode) return [...MEMORY_DEMO_CLIENTS];
+
+      // Bypass hacia SQLite en entorno local Electron
+      if (typeof window !== "undefined" && Boolean((window as any).suite?.db)) {
+        try {
+          const clientesSqlite = (window as any).suite.db.crm?.getClientes
+            ? await (window as any).suite.db.crm.getClientes()
+            : await (window as any).suite.db.getClientes();
+          return (clientesSqlite || []).map((c: any) => ({
+            id: String(c.id),
+            name: c.nombre || "Sin Nombre",
+            phone: c.whatsapp,
+            instagram: c.instagram_tiktok,
+            company: c.empresa,
+            position: c.cargo,
+            segment: c.tag || "ocasional",
+            notes: c.notas,
+            status: "activo",
+            created_at: new Date().toISOString(),
+          })) as Client[];
+        } catch (sqliteErr) {
+          console.warn("[CRM useClientsInfinite] Error leyendo SQLite:", sqliteErr);
+        }
+      }
       const from = (pageParam as number) * PAGE_SIZE;
       const to = from + PAGE_SIZE - 1;
       const { data, error } = await supabase
@@ -133,6 +159,29 @@ function useAllClients() {
     queryKey: ["clients", demoMode ? "demo" : "live"],
     queryFn: async () => {
       if (demoMode) return [...MEMORY_DEMO_CLIENTS];
+
+      // Bypass hacia SQLite en entorno local Electron
+      if (typeof window !== "undefined" && Boolean((window as any).suite?.db)) {
+        try {
+          const clientesSqlite = (window as any).suite.db.crm?.getClientes
+            ? await (window as any).suite.db.crm.getClientes()
+            : await (window as any).suite.db.getClientes();
+          return (clientesSqlite || []).map((c: any) => ({
+            id: String(c.id),
+            name: c.nombre || "Sin Nombre",
+            phone: c.whatsapp,
+            instagram: c.instagram_tiktok,
+            company: c.empresa,
+            position: c.cargo,
+            segment: c.tag || "ocasional",
+            notes: c.notas,
+            status: "activo",
+            created_at: new Date().toISOString(),
+          })) as Client[];
+        } catch (sqliteErr) {
+          console.warn("[CRM useClientsInfinite] Error leyendo SQLite:", sqliteErr);
+        }
+      }
       const { data, error } = await supabase.from("clients").select("*").order("name");
       if (error) throw error;
       return (data as Client[]) ?? [];
@@ -146,6 +195,20 @@ function useClientsMinimal() {
     queryKey: ["clients-min", demoMode ? "demo" : "live"],
     queryFn: async () => {
       if (demoMode) return MEMORY_DEMO_CLIENTS.map((c) => ({ id: c.id, name: c.name }));
+
+      if (typeof window !== "undefined" && Boolean((window as any).suite?.db)) {
+        try {
+          const clientesSqlite = (window as any).suite.db.crm?.getClientes
+            ? await (window as any).suite.db.crm.getClientes()
+            : await (window as any).suite.db.getClientes();
+          return (clientesSqlite || []).map((c: any) => ({
+            id: String(c.id),
+            name: c.nombre || "Sin Nombre",
+          }));
+        } catch (sqliteErr) {
+          console.warn("[CRM useClientsMinimal] Error leyendo SQLite:", sqliteErr);
+        }
+      }
       const { data, error } = await supabase.from("clients").select("id, name").order("name");
       if (error) throw error;
       return (data as { id: string; name: string }[]) ?? [];

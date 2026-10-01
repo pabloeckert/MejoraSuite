@@ -11,7 +11,26 @@ import { app, BrowserWindow, ipcMain, shell } from 'electron'
 import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { connectDatabase, getDatabase, getStatus, closeDatabase, getClientes, createCliente, getNegocios, querySql } from '@mejora/nucleo'
+import {
+  connectDatabase,
+  getDatabase,
+  getStatus,
+  closeDatabase,
+  getClientes,
+  createCliente,
+  getNegocios,
+  querySql,
+  getDeals,
+  createDeal,
+  getPipelines,
+  getEtapas,
+  getPersonas,
+  createPersona,
+  getPropuestas,
+  createPropuesta,
+  getCanales,
+  getMetricas
+} from '@mejora/nucleo'
 
 let dbInstance = null
 
@@ -145,9 +164,6 @@ async function fetchTelemetry() {
 }
 
 function startTelemetryPolling() {
-    console.log('[MejoraSuite] TEST_EXIT detectado. Arranque e integracion SQLite confirmados. Saliendo.')
-    setTimeout(() => { app.quit() }, 2000)
-  } {
   if (telemetryInterval) clearInterval(telemetryInterval)
 
   // Polling no bloqueante cada 60 segundos
@@ -241,6 +257,56 @@ function registerIpcHandlers() {
   ipcMain.handle('suite:db:query', (_e, sql, params) => {
     return querySql(sql, params)
   })
+
+  // ==========================================
+  // CRM IPC Handlers
+  // ==========================================
+  ipcMain.handle('suite:crm:getDeals', () => {
+    return getDeals()
+  })
+
+  ipcMain.handle('suite:crm:createDeal', (_e, deal) => {
+    return createDeal(deal)
+  })
+
+  ipcMain.handle('suite:crm:getPipelines', () => {
+    return getPipelines()
+  })
+
+  ipcMain.handle('suite:crm:getEtapas', (_e, pipelineId) => {
+    return getEtapas(pipelineId)
+  })
+
+  // ==========================================
+  // Contactos IPC Handlers
+  // ==========================================
+  ipcMain.handle('suite:contactos:getPersonas', () => {
+    return getPersonas()
+  })
+
+  ipcMain.handle('suite:contactos:createPersona', (_e, persona) => {
+    return createPersona(persona)
+  })
+
+  // ==========================================
+  // Social Media (MejoraSM) IPC Handlers
+  // ==========================================
+  ipcMain.handle('suite:sm:getPropuestas', () => {
+    return getPropuestas()
+  })
+
+  ipcMain.handle('suite:sm:createPropuesta', (_e, propuesta) => {
+    return createPropuesta(propuesta)
+  })
+
+  ipcMain.handle('suite:sm:getCanales', () => {
+    return getCanales()
+  })
+
+  ipcMain.handle('suite:sm:getMetricas', (_e, propuestaId) => {
+    return getMetricas(propuestaId)
+  })
+
 
   ipcMain.handle('suite:getDbStatus', () => {
     return getStatus(dbInstance)

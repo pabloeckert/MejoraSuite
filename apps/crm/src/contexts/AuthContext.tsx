@@ -111,6 +111,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (demoMode) return;
 
+    // Bypass hacia entorno local Electron con SQLite
+    if (typeof window !== "undefined" && Boolean((window as any).suite?.db)) {
+      const localUser = makeDemoUser("suite-local-admin", "admin@mejora.local");
+      setUser(localUser);
+      setSession(makeDemoSession(localUser));
+      setRole("admin");
+      setProfile({ full_name: "Administrador MejoraSuite (Local)", avatar_url: null });
+      setOrganizationId(DEMO_ORG_ID);
+      setLoading(false);
+      return;
+    }
+
     // Al apagar el modo demo, limpiar el usuario/sesión ficticios de
     // inmediato — si no hay sesión real todavía, que la app lo trate como
     // "no logueado" en vez de arrastrar al usuario demo un instante.

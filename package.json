@@ -1,23 +1,28 @@
 {
-    "version":  "1.0.0",
-    "workspaces":  [
-                       "apps/*",
-                       "packages/*"
-                   ],
-    "name":  "mejora-suite-monorepo",
-    "scripts":  {
-                    "build":  "turbo run build",
-                    "shell:dev":  "npm --workspace=@mejora/shell run electron:dev",
-                    "lint":  "turbo run lint",
-                    "dev":  "turbo run dev",
-                    "test":  "turbo run test",
-                    "rebuild:sqlite":  "electron-rebuild -f -w better-sqlite3",
-                    "postinstall":  "electron-rebuild -f -w better-sqlite3"
-                },
-    "private":  true,
-    "packageManager":  "npm@11.17.0",
-    "devDependencies":  {
-                            "turbo":  "^2.4.4"
-                        },
-    "description":  "Monorepo Central - Mejora Continua Suite"
+    "version": "1.0.0",
+    "workspaces": [
+        "apps/*",
+        "packages/*"
+    ],
+    "name": "mejora-suite-monorepo",
+    "scripts": {
+        "build": "turbo run build",
+        "shell:dev": "npm --workspace=@mejora/shell run electron:dev",
+        "lint": "turbo run lint",
+        "dev": "turbo run dev",
+        "test": "turbo run test",
+        "rebuild:sqlite": "electron-rebuild -f -w better-sqlite3",
+        "postinstall": "electron-rebuild -f -w better-sqlite3"
+    },
+    "private": true,
+    "packageManager": "npm@11.17.0",
+    "devDependencies": {
+        "turbo": "^2.4.4"
+    },
+    "description": "Monorepo Central - Mejora Continua Suite",
+    "dependencies": {
+        "@radix-ui/react-alert-dialog": "^1.1.23",
+        "html-to-image": "^1.11.13",
+        "jszip": "^3.10.2"
+    }
 }

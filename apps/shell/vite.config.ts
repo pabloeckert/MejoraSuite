@@ -7,12 +7,40 @@ export default defineConfig({
   base: './',
   plugins: [react()],
   resolve: {
-    alias: {
-      '@': path.resolve(__dirname, './src'),
-      '@mejora/crm': path.resolve(__dirname, '../crm/src/index.ts'),
-      '@mejora/contactos': path.resolve(__dirname, '../contactos/src/index.ts'),
-      '@mejora/nucleo': path.resolve(__dirname, '../../packages/nucleo/src/index.ts'),
-    },
+    alias: [
+      {
+        find: '@mejora/crm',
+        replacement: path.resolve(__dirname, '../crm/src/index.ts'),
+      },
+      {
+        find: '@mejora/contactos',
+        replacement: path.resolve(__dirname, '../contactos/src/index.ts'),
+      },
+      {
+        find: '@mejora/sm',
+        replacement: path.resolve(__dirname, '../sm/src/index.ts'),
+      },
+      {
+        find: '@mejora/nucleo',
+        replacement: path.resolve(__dirname, '../../packages/nucleo/src/index.ts'),
+      },
+      {
+        find: /^@\/(.*)/,
+        replacement: '$1',
+        async customResolver(source, importer, options) {
+          const norm = importer ? importer.replace(/\\/g, '/') : ''
+          let targetDir = path.resolve(__dirname, './src')
+          if (norm.includes('apps/crm')) {
+            targetDir = path.resolve(__dirname, '../crm/src')
+          } else if (norm.includes('apps/contactos')) {
+            targetDir = path.resolve(__dirname, '../contactos/src')
+          } else if (norm.includes('apps/sm')) {
+            targetDir = path.resolve(__dirname, '../sm/src')
+          }
+          return this.resolve(path.join(targetDir, source), importer, { skipSelf: true, ...options })
+        },
+      },
+    ],
   },
   server: {
     port: 5170,

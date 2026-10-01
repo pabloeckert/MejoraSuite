@@ -40,6 +40,28 @@ async function getDB() {
 }
 
 export async function saveContacts(contacts: UnifiedContact[]) {
+  // Bypass SQLite si corre en Electron MejoraSuite
+  if (typeof window !== "undefined" && Boolean((window as any).suite?.db)) {
+    try {
+      for (const c of contacts) {
+        if ((window as any).suite.db.contactos?.createPersona) {
+          await (window as any).suite.db.contactos.createPersona({
+            uuid: c.id,
+            nombre: c.firstName || "Sin Nombre",
+            apellido: c.lastName || null,
+            empresa: c.company || null,
+            cargo: c.jobTitle || null,
+            scoring: c.qualityScore || 50,
+            estado_calidad: (c.qualityStatus as any) || "util",
+            notas: c.notes || null,
+          });
+        }
+      }
+      return;
+    } catch (err) {
+      console.warn("[Contactos db.ts] Error guardando en SQLite:", err);
+    }
+  }
   const db = await getDB();
   const tx = db.transaction("contacts", "readwrite");
   for (const c of contacts) {
@@ -54,6 +76,33 @@ export async function saveContacts(contacts: UnifiedContact[]) {
  * per iteration to keep memory flat for 50K+ datasets.
  */
 export async function getAllContacts(): Promise<UnifiedContact[]> {
+  // Bypass SQLite si corre en Electron MejoraSuite
+  if (typeof window !== "undefined" && Boolean((window as any).suite?.db)) {
+    try {
+      const suiteContactos = (window as any).suite.db.contactos?.getPersonas
+        ? await (window as any).suite.db.contactos.getPersonas()
+        : await (window as any).suite.db.getClientes();
+
+      if (Array.isArray(suiteContactos) && suiteContactos.length > 0) {
+        return suiteContactos.map((p: any) => ({
+          id: p.uuid || String(p.id),
+          firstName: p.nombre || "",
+          lastName: p.apellido || "",
+          company: p.empresa || "",
+          jobTitle: p.cargo || "",
+          whatsapp: p.whatsapp || "",
+          email: p.email || "",
+          notes: p.notas || "",
+          qualityScore: p.scoring ?? 50,
+          qualityStatus: p.estado_calidad || "util",
+          source: "sqlite_nucleo",
+          createdAt: p.creado_el ? new Date(p.creado_el) : new Date(),
+        })) as UnifiedContact[];
+      }
+    } catch (err) {
+      console.warn("[Contactos db.ts] Error leyendo SQLite:", err);
+    }
+  }
   const db = await getDB();
   const all: UnifiedContact[] = [];
   let cursor = await db.transaction("contacts").store.openCursor();
@@ -104,11 +153,22 @@ export async function streamContacts(
  * Count-only operation — lightweight, no data transfer.
  */
 export async function getContactCount(): Promise<number> {
+  if (typeof window !== "undefined" && Boolean((window as any).suite?.db)) {
+    try {
+      const personas = (window as any).suite.db.contactos?.getPersonas
+        ? await (window as any).suite.db.contactos.getPersonas()
+        : [];
+      return personas.length;
+    } catch {}
+  }
   const db = await getDB();
   return db.count("contacts");
 }
 
 export async function clearContacts() {
+  if (typeof window !== "undefined" && Boolean((window as any).suite?.db)) {
+    return;
+  }
   const db = await getDB();
   await db.clear("contacts");
 }
