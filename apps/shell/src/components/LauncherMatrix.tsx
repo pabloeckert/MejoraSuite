@@ -18,7 +18,7 @@ import { TelemetryData } from '../services/telemetryService';
 
 interface LauncherMatrixProps {
   telemetry: TelemetryData;
-  onNavigate?: (view: 'crm' | 'contactos' | 'sm') => void;
+  onNavigate?: (view: 'crm' | 'contactos' | 'sm' | 'wa') => void;
 }
 
 interface ModuleCard {
@@ -134,17 +134,17 @@ export const LauncherMatrix: React.FC<LauncherMatrixProps> = ({ telemetry, onNav
       id: 'ws',
       category: 'Outreach WhatsApp',
       categoryColor: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30',
-      title: 'MejoraWS',
-      targetUrl: 'mejoraws://open',
-      isProtocol: true,
+      title: 'MejoraWS Local',
+      targetUrl: 'internal://wa',
+      isProtocol: false,
       icon: <MessageCircle className="w-6 h-6 text-emerald-400" />,
-      badge: 'Outreach 1 a 1 Baileys',
+      badge: 'Outreach Baileys SQLite',
       badgeColor: 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30',
-      description: 'Mensajería directa y personalizada para listas conocidas. Auto-respuestas inteligentes con reporte automático sincronizado al CRM.',
-      conversionImpact: 'Contacto Directo — Sincronización de respuestas',
-      statusText: telemetry.wsLocalOnline ? 'Bridge :4180 Conectado' : 'App de Escritorio (Protocolo)',
-      statusOnline: telemetry.wsLocalOnline,
-      actionText: 'Lanzar MejoraWS',
+      description: 'Motor de mensajería directa y panel de control de sesiones Baileys. Gestión de carpetas y contactos relacionales en SQLite.',
+      conversionImpact: 'Contacto Directo — Sincronización SQLite nativa',
+      statusText: telemetry.wsLocalOnline ? 'wa-engine :4180 Activo' : 'wa-engine Local SQLite',
+      statusOnline: true,
+      actionText: 'Abrir WhatsApp Local',
     },
     {
       id: 'ok',
@@ -174,6 +174,10 @@ export const LauncherMatrix: React.FC<LauncherMatrixProps> = ({ telemetry, onNav
     }
     if (mod.id === 'sm') {
       onNavigate?.('sm');
+      return;
+    }
+    if (mod.id === 'ws') {
+      onNavigate?.('wa');
       return;
     }
     if (mod.isProtocol) {

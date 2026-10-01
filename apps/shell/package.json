@@ -20,7 +20,10 @@
     "tailwind-merge": "^2.6.0",
     "@mejora/crm": "*",
     "@mejora/contactos": "*",
-    "@mejora/sm": "*"
+    "@mejora/sm": "*",
+    "@whiskeysockets/baileys": "7.0.0-rc14",
+    "pino": "^10.3.1",
+    "qrcode": "^1.5.4"
   },
   "devDependencies": {
     "@types/node": "^22.13.4",

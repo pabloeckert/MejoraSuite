@@ -4,10 +4,11 @@ import { TelemetryBar } from './components/TelemetryBar';
 import { LauncherMatrix } from './components/LauncherMatrix';
 import { SystemHealthModal } from './components/SystemHealthModal';
 import { fetchTelemetry, TelemetryData } from './services/telemetryService';
-import { ShieldCheck, Compass, Zap, Layers, Database, ArrowLeft, Briefcase, Sparkles, Share2 } from 'lucide-react';
+import { ShieldCheck, Compass, Zap, Layers, Database, ArrowLeft, Briefcase, Sparkles, Share2, MessageCircle } from 'lucide-react';
 import { CrmApp, CrmNucleoWidget } from '@mejora/crm';
 import { ContactosApp, ContactosNucleoWidget } from '@mejora/contactos';
 import { SmApp } from '@mejora/sm';
+import { WaDashboard } from './components/whatsapp/WaDashboard';
 
 const initialTelemetry: TelemetryData = {
   totalContactos: 20,
@@ -29,7 +30,7 @@ const initialTelemetry: TelemetryData = {
 };
 
 export function App() {
-  const [activeView, setActiveView] = useState<'hub' | 'crm' | 'contactos' | 'sm'>('hub');
+  const [activeView, setActiveView] = useState<'hub' | 'crm' | 'contactos' | 'sm' | 'wa'>('hub');
   const [telemetry, setTelemetry] = useState<TelemetryData>(initialTelemetry);
   const [loading, setLoading] = useState(false);
   const [healthModalOpen, setHealthModalOpen] = useState(false);
@@ -268,6 +269,41 @@ export function App() {
         </div>
       )}
 
+      {/* Vista 5: WhatsApp Engine (Renderizado Local) */}
+      {activeView === 'wa' && (
+        <div className="flex-1 flex flex-col bg-background animate-fadeIn">
+          {/* Subheader de Control para WhatsApp */}
+          <div className="bg-slate-900 border-b border-slate-800 px-6 py-2.5 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => setActiveView('hub')}
+                className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-bold text-slate-200 transition-colors border border-slate-700 cursor-pointer"
+              >
+                <ArrowLeft className="w-4 h-4 text-mc-amarillo" />
+                <span>Volver a Suite Hub</span>
+              </button>
+              <div className="h-4 w-[1px] bg-slate-700" />
+              <div className="flex items-center gap-2">
+                <MessageCircle className="w-4 h-4 text-[#25D366]" />
+                <span className="text-xs font-spartan font-bold uppercase tracking-wider text-white">
+                  MejoraWS
+                </span>
+                <span className="text-[10px] bg-emerald-950 border border-emerald-800 text-emerald-300 px-2 py-0.5 rounded-full font-mono">
+                  Baileys & SQLite Núcleo
+                </span>
+              </div>
+            </div>
+            <div className="text-xs text-slate-400 hidden sm:block">
+              Motor de Sesiones, Envíos y Carpetas SQLite
+            </div>
+          </div>
+          {/* Contenedor del Tablero WhatsApp */}
+          <div className="flex-1">
+            <WaDashboard />
+          </div>
+        </div>
+      )}
+
       {/* Health Modal */}
       {healthModalOpen && (
         <SystemHealthModal
@@ -314,6 +350,13 @@ export function App() {
                 className="hover:text-mc-amarillo transition-colors cursor-pointer"
               >
                 Social Media Local
+              </button>
+              <span>·</span>
+              <button
+                onClick={() => setActiveView('wa')}
+                className="hover:text-mc-amarillo transition-colors cursor-pointer"
+              >
+                WhatsApp Local
               </button>
             </div>
           </div>

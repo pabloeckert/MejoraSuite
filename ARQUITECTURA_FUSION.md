@@ -264,15 +264,16 @@ C:\github\MejoraSuite\
 
 ---
 
-## 7. Estado de Situación Real al Cierre de Jornada (30 de Septiembre de 2026)
+## 7. Estado de Situación Real (1 de Octubre de 2026)
 
 ### Hitos Consolidados en Código y en Disco
 1. **Monorepo Operativo (5/5 Paquetes):** Turborepo orquesta y compila exitosamente los 5 workspaces (`@mejora/nucleo`, `@mejora/shell`, `@mejora/crm`, `@mejora/contactos`, `@mejora/sm`).
-2. **Persistencia Local Soberana:** Base de datos SQLite (`better-sqlite3`) en `%APPDATA%\@mejora\shell\nucleo.db` operando con 16 tablas bajo Migraciones `001_initial_schema.sql`, `002_suite_unified.sql` y `003_suite_sm.sql`.
-3. **Desconexión Cloud (Desktop Bypass):** Supabase GoTrue e IndexedDB desacoplados en modo de escritorio. Acceso directo a SQLite mediante adaptadores locales (`nucleoAdapter.ts`) y puente IPC (`window.suite.db.*`).
-4. **Enrutamiento Visual en Shell:** Pestañas activas para Hub Central, CRM, Contactos y Social Media, con recarga y retorno fluidos.
+2. **Persistencia Local Soberana (19 Tablas):** Base de datos SQLite (`better-sqlite3`) en `%APPDATA%\@mejora\shell\nucleo.db` operando bajo Migraciones `001_initial_schema.sql`, `002_suite_unified.sql`, `003_suite_sm.sql` y `004_suite_ws.sql`.
+3. **Desconexión Cloud y Erradicación de Lowdb:** Supabase GoTrue, IndexedDB y Lowdb desacoplados en modo de escritorio. Acceso directo a SQLite mediante adaptadores locales (`nucleoAdapter.ts`) y puente IPC (`window.suite.db.*`, `window.suite.wa.*`).
+4. **Motor de WhatsApp Integrado (`wa-engine`):** Servicio de fondo asíncrono con Baileys v7, auth en `userData/wa-auth`, Bridge HTTP/SSE en `127.0.0.1:4180` y persistencia en SQLite (`ws_sesiones`, `ws_carpetas`, `ws_miembros`).
+5. **Enrutamiento y UI Nativa en Shell:** Tablero `WaDashboard` en React 18 integrado junto a CRM, Contactos y Social Media con navegación unificada, dark glassmorphism y polling ligero cada 3s.
 
-### Próximo Paso (Pendiente)
-- **Integración del Motor MejoraWS:** Extraer el motor Baileys (sesiones locales en `userData/auth` y Bridge HTTP `127.0.0.1:4180`) como servicio de fondo orquestado por Electron Main, y desarrollar un panel nativo en React 18 dentro del Shell para evitar incompatibilidades con React 19 / Tailwind v4.
-- **Migración 004 en Nucleo:** Mapear las campañas y miembros de WhatsApp desde `lowdb` (`data.json`) a tablas relacionales en `nucleo.db`.
+### Próximo Paso (Fase 4)
+- **Empaquetado y Distribución Windows:** Configurar el pipeline final de `electron-builder` para generar los instaladores NSIS y binarios portables de MejoraSuite.
+
 

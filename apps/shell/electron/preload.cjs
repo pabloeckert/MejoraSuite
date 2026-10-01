@@ -1,11 +1,22 @@
 const { contextBridge, ipcRenderer } = require('electron')
 
+const waApi = {
+  getStatus: () => ipcRenderer.invoke('suite:wa:getStatus'),
+  connect: () => ipcRenderer.invoke('suite:wa:connect'),
+  logout: () => ipcRenderer.invoke('suite:wa:logout'),
+  getCarpetas: () => ipcRenderer.invoke('suite:wa:getCarpetas'),
+  createCarpeta: (carpeta) => ipcRenderer.invoke('suite:wa:createCarpeta', carpeta),
+  getMiembros: (carpetaId) => ipcRenderer.invoke('suite:wa:getMiembros', carpetaId),
+  createMiembro: (miembro) => ipcRenderer.invoke('suite:wa:createMiembro', miembro),
+}
+
 contextBridge.exposeInMainWorld('suite', {
   open: (target, demoMode) => ipcRenderer.invoke('suite:open', target, demoMode),
   checkMejoraWs: () => ipcRenderer.invoke('suite:checkMejoraWs'),
   getTelemetry: () => ipcRenderer.invoke('suite:getTelemetry'),
   getDbStatus: () => ipcRenderer.invoke('suite:getDbStatus'),
   pingDb: () => ipcRenderer.invoke('suite:pingDb'),
+  wa: waApi,
   db: {
     getStatus: () => ipcRenderer.invoke('suite:getDbStatus'),
     getClientes: () => ipcRenderer.invoke('suite:db:getClientes'),
@@ -31,6 +42,15 @@ contextBridge.exposeInMainWorld('suite', {
       createPropuesta: (propuesta) => ipcRenderer.invoke('suite:sm:createPropuesta', propuesta),
       getCanales: () => ipcRenderer.invoke('suite:sm:getCanales'),
       getMetricas: (propuestaId) => ipcRenderer.invoke('suite:sm:getMetricas', propuestaId),
+    },
+    wa: {
+      getStatus: () => ipcRenderer.invoke('suite:wa:getStatus'),
+      connect: () => ipcRenderer.invoke('suite:wa:connect'),
+      logout: () => ipcRenderer.invoke('suite:wa:logout'),
+      getCarpetas: () => ipcRenderer.invoke('suite:wa:getCarpetas'),
+      createCarpeta: (carpeta) => ipcRenderer.invoke('suite:wa:createCarpeta', carpeta),
+      getMiembros: (carpetaId) => ipcRenderer.invoke('suite:wa:getMiembros', carpetaId),
+      createMiembro: (miembro) => ipcRenderer.invoke('suite:wa:createMiembro', miembro),
     },
   },
   onTelemetryUpdate: (callback) => {

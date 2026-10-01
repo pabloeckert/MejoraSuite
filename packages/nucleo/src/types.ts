@@ -123,3 +123,28 @@ export interface SmMetricaRecord {
   registrado_el?: string;
 }
 
+export interface WsSesionRecord {
+  id: number;
+  session_name: string;
+  status: string;
+  qr_code?: string | null;
+  phone?: string | null;
+  creado_el?: string;
+  actualizado_el?: string;
+}
+
+export interface WsCarpetaRecord {
+  id: number;
+  nombre: string;
+  color?: string | null;
+  creado_el?: string;
+}
+
+export interface WsMiembroRecord {
+  id: number;
+  carpeta_id: number;
+  persona_id?: number | null;
+  telefono: string;
+  agregado_el?: string;
+}
+

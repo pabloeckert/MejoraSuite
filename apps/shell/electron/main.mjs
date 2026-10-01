@@ -29,8 +29,23 @@ import {
   getPropuestas,
   createPropuesta,
   getCanales,
-  getMetricas
+  getMetricas,
+  getWsCarpetas,
+  createWsCarpeta,
+  getWsSession,
+  updateWsSession,
+  getWsMiembros,
+  createWsMiembro
 } from '@mejora/nucleo'
+import {
+  startWaEngine,
+  stopWaEngine,
+  connectWhatsApp,
+  logoutWhatsApp,
+  getWaEngineState
+} from './wa-engine/index.mjs'
+
+let waEngineInstance = null
 
 let dbInstance = null
 
@@ -308,6 +323,37 @@ function registerIpcHandlers() {
   })
 
 
+  // ==========================================
+  // WhatsApp Engine (MejoraWS) IPC Handlers
+  // ==========================================
+  ipcMain.handle('suite:wa:getStatus', () => {
+    return getWaEngineState()
+  })
+
+  ipcMain.handle('suite:wa:connect', async () => {
+    return await connectWhatsApp()
+  })
+
+  ipcMain.handle('suite:wa:logout', async () => {
+    return await logoutWhatsApp()
+  })
+
+  ipcMain.handle('suite:wa:getCarpetas', () => {
+    return getWsCarpetas()
+  })
+
+  ipcMain.handle('suite:wa:createCarpeta', (_e, carpeta) => {
+    return createWsCarpeta(carpeta)
+  })
+
+  ipcMain.handle('suite:wa:getMiembros', (_e, carpetaId) => {
+    return getWsMiembros(carpetaId)
+  })
+
+  ipcMain.handle('suite:wa:createMiembro', (_e, miembro) => {
+    return createWsMiembro(miembro)
+  })
+
   ipcMain.handle('suite:getDbStatus', () => {
     return getStatus(dbInstance)
   })
@@ -335,6 +381,16 @@ app.whenReady().then(() => {
   createWindow()
   startTelemetryPolling()
 
+  // Inicialización no bloqueante del motor WhatsApp Baileys + Bridge (127.0.0.1:4180)
+  try {
+    const userDataDir = app.getPath('userData')
+    const waAuthDir = path.join(userDataDir, 'wa-auth')
+    waEngineInstance = startWaEngine({ userDataDir, waAuthDir, autoConnect: false })
+    console.log('[MejoraSuite] WhatsApp Engine (wa-engine) inicializado silenciosamente en segundo plano (puerto 4180)')
+  } catch (waErr) {
+    console.error('[MejoraSuite] Error al inicializar wa-engine:', waErr)
+  }
+
   if (process.env.TEST_EXIT) {
     console.log('[MejoraSuite] TEST_EXIT detectado. Arranque e integracion SQLite confirmados. Saliendo.')
     setTimeout(() => { app.quit() }, 2000)
@@ -350,6 +406,7 @@ app.on('window-all-closed', () => {
     clearInterval(telemetryInterval)
     telemetryInterval = null
   }
+  try { stopWaEngine() } catch {}
   try { closeDatabase() } catch {}
   if (process.platform !== 'darwin') app.quit()
 })

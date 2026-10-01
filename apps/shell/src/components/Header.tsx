@@ -1,4 +1,4 @@
-import { RefreshCw, Activity, ExternalLink, ShieldCheck, LayoutDashboard, Briefcase, Sparkles, Share2 } from 'lucide-react';
+import { RefreshCw, Activity, ExternalLink, ShieldCheck, LayoutDashboard, Briefcase, Sparkles, Share2, MessageCircle } from 'lucide-react';
 import { TelemetryData } from '../services/telemetryService';
 
 interface HeaderProps {
@@ -6,8 +6,8 @@ interface HeaderProps {
   loading: boolean;
   onRefresh: () => void;
   onOpenHealth: () => void;
-  activeView?: 'hub' | 'crm' | 'contactos' | 'sm';
-  onViewChange?: (view: 'hub' | 'crm' | 'contactos' | 'sm') => void;
+  activeView?: 'hub' | 'crm' | 'contactos' | 'sm' | 'wa';
+  onViewChange?: (view: 'hub' | 'crm' | 'contactos' | 'sm' | 'wa') => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -90,6 +90,17 @@ export const Header: React.FC<HeaderProps> = ({
             >
               <Share2 className="w-3.5 h-3.5" />
               <span>Social Media</span>
+            </button>
+            <button
+              onClick={() => onViewChange('wa')}
+              className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-spartan font-bold uppercase tracking-wider transition-all cursor-pointer ${
+                activeView === 'wa'
+                  ? 'bg-[#25D366] text-mc-slate shadow-sm'
+                  : 'text-slate-300 hover:text-white hover:bg-white/5'
+              }`}
+            >
+              <MessageCircle className="w-3.5 h-3.5" />
+              <span>WhatsApp</span>
             </button>
           </div>
         )}

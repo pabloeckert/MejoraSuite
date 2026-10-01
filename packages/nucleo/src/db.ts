@@ -15,7 +15,10 @@ import type {
   ContactoCanalRecord,
   SmCanalRecord,
   SmPropuestaRecord,
-  SmMetricaRecord
+  SmMetricaRecord,
+  WsSesionRecord,
+  WsCarpetaRecord,
+  WsMiembroRecord
 } from './types'
 
 let db: Database.Database | null = null
@@ -339,6 +342,176 @@ export function getMetricas(propuestaId?: number): SmMetricaRecord[] {
     .all() as SmMetricaRecord[]
 }
 
+// ==========================================
+// WhatsApp Engine (MejoraWS): Sesiones, Carpetas y Miembros
+// ==========================================
+
+export function getWsSessions(): WsSesionRecord[] {
+  const activeDb = db || connectDatabase()
+  return activeDb
+    .prepare('SELECT id, session_name, status, qr_code, phone, creado_el, actualizado_el FROM ws_sesiones ORDER BY id ASC')
+    .all() as WsSesionRecord[]
+}
+
+export function getWsSession(sessionName: string = 'default'): WsSesionRecord | null {
+  const activeDb = db || connectDatabase()
+  const row = activeDb
+    .prepare('SELECT id, session_name, status, qr_code, phone, creado_el, actualizado_el FROM ws_sesiones WHERE session_name = ?')
+    .get(sessionName) as WsSesionRecord | undefined
+  return row || null
+}
+
+export function updateWsSession(
+  sessionName: string,
+  updates: Partial<Pick<WsSesionRecord, 'status' | 'qr_code' | 'phone'>>
+): WsSesionRecord {
+  const activeDb = db || connectDatabase()
+  const existing = getWsSession(sessionName)
+
+  if (!existing) {
+    const insert = activeDb.prepare(
+      "INSERT INTO ws_sesiones (session_name, status, qr_code, phone, actualizado_el) VALUES (?, ?, ?, ?, datetime('now'))"
+    )
+    const info = insert.run(
+      sessionName,
+      updates.status || 'desconectado',
+      updates.qr_code ?? null,
+      updates.phone ?? null
+    )
+    return {
+      id: Number(info.lastInsertRowid),
+      session_name: sessionName,
+      status: updates.status || 'desconectado',
+      qr_code: updates.qr_code ?? null,
+      phone: updates.phone ?? null,
+      creado_el: new Date().toISOString(),
+      actualizado_el: new Date().toISOString()
+    }
+  }
+
+  const newStatus = updates.status !== undefined ? updates.status : existing.status
+  const newQr = updates.qr_code !== undefined ? updates.qr_code : existing.qr_code
+  const newPhone = updates.phone !== undefined ? updates.phone : existing.phone
+
+  activeDb
+    .prepare("UPDATE ws_sesiones SET status = ?, qr_code = ?, phone = ?, actualizado_el = datetime('now') WHERE session_name = ?")
+    .run(newStatus, newQr, newPhone, sessionName)
+
+  return {
+    ...existing,
+    status: newStatus,
+    qr_code: newQr,
+    phone: newPhone,
+    actualizado_el: new Date().toISOString()
+  }
+}
+
+export function getWsCarpetas(): WsCarpetaRecord[] {
+  const activeDb = db || connectDatabase()
+  return activeDb
+    .prepare('SELECT id, nombre, color, creado_el FROM ws_carpetas ORDER BY id ASC')
+    .all() as WsCarpetaRecord[]
+}
+
+export function getWsCarpetaById(id: number): WsCarpetaRecord | null {
+  const activeDb = db || connectDatabase()
+  const row = activeDb
+    .prepare('SELECT id, nombre, color, creado_el FROM ws_carpetas WHERE id = ?')
+    .get(id) as WsCarpetaRecord | undefined
+  return row || null
+}
+
+export function getWsCarpetaByNombre(nombre: string): WsCarpetaRecord | null {
+  const activeDb = db || connectDatabase()
+  const row = activeDb
+    .prepare('SELECT id, nombre, color, creado_el FROM ws_carpetas WHERE LOWER(nombre) = LOWER(?)')
+    .get(nombre) as WsCarpetaRecord | undefined
+  return row || null
+}
+
+export function createWsCarpeta(carpeta: Partial<WsCarpetaRecord>): WsCarpetaRecord {
+  const activeDb = db || connectDatabase()
+  const nombre = (carpeta.nombre || 'Nueva Carpeta').trim()
+  const color = carpeta.color || '#25D366'
+  const stmt = activeDb.prepare(
+    'INSERT INTO ws_carpetas (nombre, color) VALUES (?, ?)'
+  )
+  const info = stmt.run(nombre, color)
+  return {
+    id: Number(info.lastInsertRowid),
+    nombre,
+    color,
+    creado_el: new Date().toISOString()
+  }
+}
+
+export function updateWsCarpeta(id: number, updates: Partial<WsCarpetaRecord>): WsCarpetaRecord | null {
+  const activeDb = db || connectDatabase()
+  const existing = getWsCarpetaById(id)
+  if (!existing) return null
+
+  const nombre = updates.nombre ? updates.nombre.trim() : existing.nombre
+  const color = updates.color !== undefined ? updates.color : existing.color
+
+  activeDb.prepare('UPDATE ws_carpetas SET nombre = ?, color = ? WHERE id = ?').run(nombre, color, id)
+  return {
+    ...existing,
+    nombre,
+    color
+  }
+}
+
+export function deleteWsCarpeta(id: number): boolean {
+  const activeDb = db || connectDatabase()
+  const res = activeDb.prepare('DELETE FROM ws_carpetas WHERE id = ?').run(id)
+  return res.changes > 0
+}
+
+export function getWsMiembros(carpetaId?: number): WsMiembroRecord[] {
+  const activeDb = db || connectDatabase()
+  if (carpetaId) {
+    return activeDb
+      .prepare('SELECT id, carpeta_id, persona_id, telefono, agregado_el FROM ws_miembros WHERE carpeta_id = ? ORDER BY id DESC')
+      .all(carpetaId) as WsMiembroRecord[]
+  }
+  return activeDb
+    .prepare('SELECT id, carpeta_id, persona_id, telefono, agregado_el FROM ws_miembros ORDER BY id DESC')
+    .all() as WsMiembroRecord[]
+}
+
+export function findWsMiembroByTelefono(carpetaId: number, telefono: string): WsMiembroRecord | null {
+  const activeDb = db || connectDatabase()
+  const row = activeDb
+    .prepare('SELECT id, carpeta_id, persona_id, telefono, agregado_el FROM ws_miembros WHERE carpeta_id = ? AND telefono = ?')
+    .get(carpetaId, telefono) as WsMiembroRecord | undefined
+  return row || null
+}
+
+export function createWsMiembro(miembro: Partial<WsMiembroRecord>): WsMiembroRecord {
+  const activeDb = db || connectDatabase()
+  const stmt = activeDb.prepare(
+    'INSERT INTO ws_miembros (carpeta_id, persona_id, telefono) VALUES (?, ?, ?)'
+  )
+  const info = stmt.run(
+    miembro.carpeta_id || 1,
+    miembro.persona_id ?? null,
+    miembro.telefono || ''
+  )
+  return {
+    id: Number(info.lastInsertRowid),
+    carpeta_id: miembro.carpeta_id || 1,
+    persona_id: miembro.persona_id ?? null,
+    telefono: miembro.telefono || '',
+    agregado_el: new Date().toISOString()
+  }
+}
+
+export function deleteWsMiembro(id: number): boolean {
+  const activeDb = db || connectDatabase()
+  const res = activeDb.prepare('DELETE FROM ws_miembros WHERE id = ?').run(id)
+  return res.changes > 0
+}
+
 export function querySql<T = any>(sql: string, params: any[] = []): T[] {
   const activeDb = db || connectDatabase()
   return activeDb.prepare(sql).all(...params) as T[]
@@ -387,6 +560,23 @@ export function seedDemoDataIfEmpty(): void {
         )
         insertDeal.run('Consultoría Transformación Comercial', 450000, 'ARS', 3, 70, 'abierto', 'Propuesta presentada a Estudio Alvear')
         insertDeal.run('Implementación MejoraSuite Hub', 850000, 'ARS', 2, 50, 'abierto', 'Calificación inicial con Distribuidora El Litoral')
+      }
+    }
+  } catch {}
+
+  try {
+    const wsTable = db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='ws_sesiones'").get()
+    if (wsTable) {
+      const sessCount = (db.prepare('SELECT COUNT(*) as c FROM ws_sesiones').get() as { c: number }).c
+      if (sessCount === 0) {
+        db.prepare("INSERT INTO ws_sesiones (session_name, status) VALUES ('default', 'desconectado')").run()
+      }
+    }
+    const wsCarpetasTable = db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='ws_carpetas'").get()
+    if (wsCarpetasTable) {
+      const carpetaCount = (db.prepare('SELECT COUNT(*) as c FROM ws_carpetas').get() as { c: number }).c
+      if (carpetaCount === 0) {
+        db.prepare("INSERT INTO ws_carpetas (nombre, color) VALUES ('General', '#25D366')").run()
       }
     }
   } catch {}
