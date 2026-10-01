@@ -39,6 +39,17 @@ export interface SuiteWaApi {
   createMiembro: (miembro: { carpeta_id: number; persona_id?: number | null; telefono: string }) => Promise<WsMiembro>;
 }
 
+export interface SuiteSmApi {
+  getPropuestas: () => Promise<any[]>;
+  createPropuesta: (propuesta: any) => Promise<any>;
+  updatePropuestaEstado: (id: number, estado: string, fechaProgramada?: string) => Promise<any>;
+  verificarHashPropuesta: (dataOrHash: any) => Promise<{ hash: string; exists: boolean; propuesta?: any }>;
+  checkTimeoutPropuestas: () => Promise<{ affectedCount: number; affectedIds: number[] }>;
+  forceZernioSync: () => Promise<{ success: boolean; procesadas?: number; publicadas?: number; fallidas?: number; error?: string }>;
+  getCanales: () => Promise<any[]>;
+  getMetricas: (propuestaId?: number) => Promise<any[]>;
+}
+
 declare global {
   interface Window {
     suite?: {
@@ -48,6 +59,9 @@ declare global {
       getDbStatus: () => Promise<any>;
       pingDb: () => Promise<any>;
       wa: SuiteWaApi;
+      ai: {
+        generate: (prompt: string, contexto_historico?: string) => Promise<{ success: boolean; text?: string; error?: string }>;
+      };
       db: {
         getStatus: () => Promise<any>;
         getClientes: () => Promise<any[]>;
@@ -56,7 +70,7 @@ declare global {
         query: (sql: string, params?: any[]) => Promise<any[]>;
         crm: any;
         contactos: any;
-        sm: any;
+        sm: SuiteSmApi;
         wa: SuiteWaApi;
       };
       onTelemetryUpdate?: (callback: (data: any) => void) => () => void;

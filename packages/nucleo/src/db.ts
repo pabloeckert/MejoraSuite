@@ -15,6 +15,8 @@ import type {
   ContactoCanalRecord,
   SmCanalRecord,
   SmPropuestaRecord,
+  SmPropuestaEstado,
+  SmTimeoutCheckResult,
   SmMetricaRecord,
   WsSesionRecord,
   WsCarpetaRecord,
@@ -286,21 +288,60 @@ export function createPersona(persona: Partial<PersonaRecord>): PersonaRecord {
 }
 
 // ==========================================
-// Social Media (MejoraSM)
+// Social Media (MejoraSM): Blindaje, Idempotencia y Estados
 // ==========================================
+
+export function computePropuestaHash(data: {
+  titulo?: string;
+  contenido?: string;
+  canal_id?: number | null;
+  programado_el?: string | null;
+}): string {
+  const normal = `${(data.titulo || '').trim().toLowerCase()}|${(data.contenido || '').trim()}|${data.canal_id ?? ''}|${data.programado_el ?? ''}`
+  return crypto.createHash('sha256').update(normal).digest('hex')
+}
+
+export function findPropuestaByHash(hash: string): SmPropuestaRecord | null {
+  const activeDb = db || connectDatabase()
+  const row = activeDb
+    .prepare(
+      'SELECT id, titulo, contenido, formato, estado, canal_id, hash_unico, programado_el, publicado_el, creado_el, actualizado_el FROM sm_propuestas WHERE hash_unico = ?'
+    )
+    .get(hash) as SmPropuestaRecord | undefined
+  return row || null
+}
+
+export function getPropuestaById(id: number): SmPropuestaRecord | null {
+  const activeDb = db || connectDatabase()
+  const row = activeDb
+    .prepare(
+      'SELECT id, titulo, contenido, formato, estado, canal_id, hash_unico, programado_el, publicado_el, creado_el, actualizado_el FROM sm_propuestas WHERE id = ?'
+    )
+    .get(id) as SmPropuestaRecord | undefined
+  return row || null
+}
+
 export function getPropuestas(): SmPropuestaRecord[] {
   const activeDb = db || connectDatabase()
   return activeDb
     .prepare(
-      'SELECT id, titulo, contenido, formato, estado, canal_id, programado_el, publicado_el, creado_el, actualizado_el FROM sm_propuestas ORDER BY id DESC'
+      'SELECT id, titulo, contenido, formato, estado, canal_id, hash_unico, programado_el, publicado_el, creado_el, actualizado_el FROM sm_propuestas ORDER BY id DESC'
     )
     .all() as SmPropuestaRecord[]
 }
 
 export function createPropuesta(propuesta: Partial<SmPropuestaRecord>): SmPropuestaRecord {
   const activeDb = db || connectDatabase()
+  const hash = propuesta.hash_unico || computePropuestaHash(propuesta)
+
+  // Blindaje de Idempotencia: previene duplicados por doble click o reenvío masivo
+  const existing = findPropuestaByHash(hash)
+  if (existing) {
+    return existing
+  }
+
   const stmt = activeDb.prepare(
-    'INSERT INTO sm_propuestas (titulo, contenido, formato, estado, canal_id, programado_el, publicado_el) VALUES (?, ?, ?, ?, ?, ?, ?)'
+    'INSERT INTO sm_propuestas (titulo, contenido, formato, estado, canal_id, hash_unico, programado_el, publicado_el) VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
   )
   const info = stmt.run(
     propuesta.titulo || 'Sin Título',
@@ -308,6 +349,7 @@ export function createPropuesta(propuesta: Partial<SmPropuestaRecord>): SmPropue
     propuesta.formato || 'post',
     propuesta.estado || 'borrador',
     propuesta.canal_id ?? null,
+    hash,
     propuesta.programado_el ?? null,
     propuesta.publicado_el ?? null
   )
@@ -316,10 +358,99 @@ export function createPropuesta(propuesta: Partial<SmPropuestaRecord>): SmPropue
     titulo: propuesta.titulo || 'Sin Título',
     contenido: propuesta.contenido || '',
     formato: propuesta.formato || 'post',
-    estado: propuesta.estado || 'borrador',
+    estado: (propuesta.estado as SmPropuestaEstado) || 'borrador',
     canal_id: propuesta.canal_id ?? null,
+    hash_unico: hash,
     programado_el: propuesta.programado_el ?? null,
-    publicado_el: propuesta.publicado_el ?? null
+    publicado_el: propuesta.publicado_el ?? null,
+    creado_el: new Date().toISOString(),
+    actualizado_el: new Date().toISOString()
+  }
+}
+
+export function updatePropuestaEstado(
+  id: number,
+  nuevoEstado: SmPropuestaEstado,
+  fechaProgramada?: string | null
+): SmPropuestaRecord | null {
+  const activeDb = db || connectDatabase()
+  const existing = getPropuestaById(id)
+  if (!existing) return null
+
+  if (nuevoEstado === 'programado' && fechaProgramada !== undefined) {
+    activeDb
+      .prepare(
+        "UPDATE sm_propuestas SET estado = ?, programado_el = ?, actualizado_el = datetime('now') WHERE id = ?"
+      )
+      .run(nuevoEstado, fechaProgramada, id)
+  } else if (nuevoEstado === 'publicado') {
+    activeDb
+      .prepare(
+        "UPDATE sm_propuestas SET estado = ?, publicado_el = COALESCE(publicado_el, datetime('now')), actualizado_el = datetime('now') WHERE id = ?"
+      )
+      .run(nuevoEstado, id)
+  } else {
+    activeDb
+      .prepare(
+        "UPDATE sm_propuestas SET estado = ?, actualizado_el = datetime('now') WHERE id = ?"
+      )
+      .run(nuevoEstado, id)
+  }
+
+  const updated = getPropuestaById(id)
+  return updated || {
+    ...existing,
+    estado: nuevoEstado,
+    programado_el: fechaProgramada !== undefined ? fechaProgramada : existing.programado_el,
+    publicado_el: nuevoEstado === 'publicado' ? (existing.publicado_el || new Date().toISOString()) : existing.publicado_el,
+    actualizado_el: new Date().toISOString()
+  }
+}
+
+export function getPropuestasListasParaPublicar(): SmPropuestaRecord[] {
+  const activeDb = db || connectDatabase()
+  return activeDb
+    .prepare(
+      `SELECT id, titulo, contenido, formato, estado, canal_id, hash_unico, programado_el, publicado_el, creado_el, actualizado_el
+       FROM sm_propuestas
+       WHERE estado = 'programado'
+         AND programado_el IS NOT NULL
+         AND datetime(programado_el) <= datetime('now')
+       ORDER BY programado_el ASC`
+    )
+    .all() as SmPropuestaRecord[]
+}
+
+export function checkTimeoutPropuestas(): SmTimeoutCheckResult {
+  const activeDb = db || connectDatabase()
+
+  // Buscar propuestas con fecha programada pasada que no hayan sido aprobadas ni publicadas
+  const expired = activeDb
+    .prepare(
+      `SELECT id FROM sm_propuestas
+       WHERE programado_el IS NOT NULL
+         AND datetime(programado_el) < datetime('now')
+         AND estado NOT IN ('aprobado', 'publicado', 'congelado_por_timeout', 'rechazado')`
+    )
+    .all() as { id: number }[]
+
+  if (expired.length === 0) {
+    return { affectedCount: 0, affectedIds: [] }
+  }
+
+  const ids = expired.map((row) => row.id)
+  const placeholders = ids.map(() => '?').join(',')
+  activeDb
+    .prepare(
+      `UPDATE sm_propuestas
+       SET estado = 'congelado_por_timeout', actualizado_el = datetime('now')
+       WHERE id IN (${placeholders})`
+    )
+    .run(...ids)
+
+  return {
+    affectedCount: ids.length,
+    affectedIds: ids
   }
 }
 

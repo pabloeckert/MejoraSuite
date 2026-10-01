@@ -100,17 +100,33 @@ export interface SmCanalRecord {
   creado_el?: string;
 }
 
+export type SmPropuestaEstado =
+  | 'borrador'
+  | 'pendiente_revision'
+  | 'aprobado'
+  | 'programado'
+  | 'congelado_por_timeout'
+  | 'publicado'
+  | 'error_sincronizacion'
+  | 'rechazado';
+
 export interface SmPropuestaRecord {
   id: number;
   titulo: string;
   contenido: string;
   formato?: string | null;
-  estado: 'borrador' | 'aprobado' | 'programado' | 'publicado' | 'rechazado';
+  estado: SmPropuestaEstado;
   canal_id?: number | null;
+  hash_unico?: string | null;
   programado_el?: string | null;
   publicado_el?: string | null;
   creado_el?: string;
   actualizado_el?: string;
+}
+
+export interface SmTimeoutCheckResult {
+  affectedCount: number;
+  affectedIds: number[];
 }
 
 export interface SmMetricaRecord {

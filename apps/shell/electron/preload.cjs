@@ -17,6 +17,9 @@ contextBridge.exposeInMainWorld('suite', {
   getDbStatus: () => ipcRenderer.invoke('suite:getDbStatus'),
   pingDb: () => ipcRenderer.invoke('suite:pingDb'),
   wa: waApi,
+  ai: {
+    generate: (prompt, contexto_historico) => ipcRenderer.invoke('suite:ai:generate', prompt, contexto_historico),
+  },
   db: {
     getStatus: () => ipcRenderer.invoke('suite:getDbStatus'),
     getClientes: () => ipcRenderer.invoke('suite:db:getClientes'),
@@ -40,6 +43,10 @@ contextBridge.exposeInMainWorld('suite', {
     sm: {
       getPropuestas: () => ipcRenderer.invoke('suite:sm:getPropuestas'),
       createPropuesta: (propuesta) => ipcRenderer.invoke('suite:sm:createPropuesta', propuesta),
+      updatePropuestaEstado: (id, estado, fechaProgramada) => ipcRenderer.invoke('suite:sm:updatePropuestaEstado', id, estado, fechaProgramada),
+      verificarHashPropuesta: (dataOrHash) => ipcRenderer.invoke('suite:sm:verificarHashPropuesta', dataOrHash),
+      checkTimeoutPropuestas: () => ipcRenderer.invoke('suite:sm:checkTimeoutPropuestas'),
+      forceZernioSync: () => ipcRenderer.invoke('suite:sm:forceZernioSync'),
       getCanales: () => ipcRenderer.invoke('suite:sm:getCanales'),
       getMetricas: (propuestaId) => ipcRenderer.invoke('suite:sm:getMetricas', propuestaId),
     },

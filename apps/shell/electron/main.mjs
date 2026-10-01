@@ -28,6 +28,11 @@ import {
   createPersona,
   getPropuestas,
   createPropuesta,
+  updatePropuestaEstado,
+  computePropuestaHash,
+  findPropuestaByHash,
+  checkTimeoutPropuestas,
+  getPropuestasListasParaPublicar,
   getCanales,
   getMetricas,
   getWsCarpetas,
@@ -44,6 +49,13 @@ import {
   logoutWhatsApp,
   getWaEngineState
 } from './wa-engine/index.mjs'
+import {
+  dispatchPropuestaZernio,
+  isZernioConfigured
+} from './zernio-dispatcher.mjs'
+import {
+  generateCyborgContent
+} from './gemini-engine.mjs'
 
 let waEngineInstance = null
 
@@ -228,6 +240,74 @@ function createWindow() {
   })
 }
 
+/**
+ * Extrae los 3 posts publicados con mayor tasa de conversión (o métrica de éxito equivalente)
+ * registrados en SQLite en los últimos 30 días, concatenando sus textos en un bloque llamado contexto_historico.
+ * @returns {string} Bloque de contexto histórico concatenado o cadena vacía si no hay registros.
+ */
+function extraerAdnGanadorHistorico() {
+  try {
+    // Consulta a la tabla sm_metricas unida a los posts publicados (sm_propuestas) de los últimos 30 días
+    let rows = querySql(`
+      SELECT p.id, p.titulo, p.contenido,
+             MAX(CASE WHEN m.alcance > 0 THEN (CAST(m.clics AS REAL) / m.alcance) ELSE 0 END) AS tasa_conversion,
+             MAX(m.clics) AS max_clics,
+             MAX(m.interacciones) AS max_interacciones
+      FROM sm_propuestas p
+      INNER JOIN sm_metricas m ON p.id = m.propuesta_id
+      WHERE p.estado = 'publicado'
+        AND datetime(COALESCE(p.publicado_el, m.registrado_el)) >= datetime('now', '-30 days')
+      GROUP BY p.id, p.titulo, p.contenido
+      ORDER BY tasa_conversion DESC, max_clics DESC, max_interacciones DESC
+      LIMIT 3
+    `)
+
+    // Fallback defensivo: si aún no hay publicaciones con métricas en los últimos 30 días,
+    // utilizar los mejores posts publicados históricos registrados
+    if (!rows || rows.length === 0) {
+      rows = querySql(`
+        SELECT p.id, p.titulo, p.contenido,
+               MAX(CASE WHEN m.alcance > 0 THEN (CAST(m.clics AS REAL) / m.alcance) ELSE 0 END) AS tasa_conversion,
+               MAX(m.clics) AS max_clics,
+               MAX(m.interacciones) AS max_interacciones
+        FROM sm_propuestas p
+        INNER JOIN sm_metricas m ON p.id = m.propuesta_id
+        WHERE p.estado = 'publicado'
+        GROUP BY p.id, p.titulo, p.contenido
+        ORDER BY tasa_conversion DESC, max_clics DESC, max_interacciones DESC
+        LIMIT 3
+      `)
+    }
+
+    if (!rows || rows.length === 0) {
+      return ''
+    }
+
+    // Concatenar sus textos en un bloque estructurado
+    const contexto_historico = rows.map((r, idx) => {
+      let texto = r.contenido
+      try {
+        const parsed = JSON.parse(r.contenido)
+        if (parsed && typeof parsed === 'object') {
+          const parts = []
+          if (parsed.hook) parts.push(`Gancho: ${parsed.hook}`)
+          if (parsed.body) parts.push(`Cuerpo: ${parsed.body}`)
+          if (parsed.cta) parts.push(`Cierre/CTA: ${parsed.cta}`)
+          if (parts.length > 0) texto = parts.join('\n')
+        }
+      } catch {
+        // Mantener texto plano
+      }
+      return `[Post Exitoso #${idx + 1} - ${r.titulo || 'Sin Título'}]\n${texto}`
+    }).join('\n\n')
+
+    return contexto_historico
+  } catch (err) {
+    console.warn('[MejoraSuite] Error al extraer ADN ganador de métricas SQLite:', err)
+    return ''
+  }
+}
+
 function registerIpcHandlers() {
   ipcMain.handle('suite:open', (_e, target, demoMode) => {
     const demoParam = typeof demoMode === 'boolean' ? `?demo=${demoMode}` : ''
@@ -314,12 +394,55 @@ function registerIpcHandlers() {
     return createPropuesta(propuesta)
   })
 
+  ipcMain.handle('suite:sm:updatePropuestaEstado', (_e, id, estado, fechaProgramada) => {
+    return updatePropuestaEstado(Number(id), estado, fechaProgramada)
+  })
+
+  ipcMain.handle('suite:sm:verificarHashPropuesta', (_e, dataOrHash) => {
+    const hash = typeof dataOrHash === 'string' ? dataOrHash : computePropuestaHash(dataOrHash)
+    const existing = findPropuestaByHash(hash)
+    return {
+      hash,
+      exists: !!existing,
+      propuesta: existing
+    }
+  })
+
+  ipcMain.handle('suite:sm:checkTimeoutPropuestas', () => {
+    return checkTimeoutPropuestas()
+  })
+
+  ipcMain.handle('suite:sm:forceZernioSync', async () => {
+    try {
+      const res = await syncZernioPropuestas()
+      return { success: true, ...res }
+    } catch (err) {
+      return { success: false, error: err instanceof Error ? err.message : String(err) }
+    }
+  })
+
   ipcMain.handle('suite:sm:getCanales', () => {
     return getCanales()
   })
 
   ipcMain.handle('suite:sm:getMetricas', (_e, propuestaId) => {
     return getMetricas(propuestaId)
+  })
+
+  // ==========================================
+  // IA & Cyborg Editor (Gemini Pro) IPC Handlers
+  // ==========================================
+  ipcMain.handle('suite:ai:generate', async (_e, prompt, contexto_historico) => {
+    try {
+      // Extracción del ADN Ganador desde SQLite si no fue especificado manualmente
+      const contextoFinal = (typeof contexto_historico === 'string' && contexto_historico.trim().length > 0)
+        ? contexto_historico
+        : extraerAdnGanadorHistorico()
+
+      return await generateCyborgContent(prompt, contextoFinal)
+    } catch (err) {
+      return { success: false, error: err instanceof Error ? err.message : String(err) }
+    }
   })
 
 
@@ -370,6 +493,66 @@ function registerIpcHandlers() {
   })
 }
 
+// ==========================================
+// Zernio Sincronización Automática (Polling local)
+// ==========================================
+let zernioSyncInterval = null
+
+async function syncZernioPropuestas() {
+  const listas = getPropuestasListasParaPublicar()
+  if (!listas || listas.length === 0) {
+    return { procesadas: 0, publicadas: 0, fallidas: 0, detalles: [] }
+  }
+
+  let publicadas = 0
+  let fallidas = 0
+  const detalles = []
+
+  for (const propuesta of listas) {
+    try {
+      const res = await dispatchPropuestaZernio(propuesta)
+      if (res.success) {
+        updatePropuestaEstado(propuesta.id, 'publicado')
+        publicadas++
+        detalles.push({ id: propuesta.id, estado: 'publicado', zernioPostId: res.zernioPostId })
+      } else {
+        updatePropuestaEstado(propuesta.id, 'error_sincronizacion')
+        fallidas++
+        detalles.push({ id: propuesta.id, estado: 'error_sincronizacion', error: res.error })
+      }
+    } catch (err) {
+      updatePropuestaEstado(propuesta.id, 'error_sincronizacion')
+      fallidas++
+      detalles.push({ id: propuesta.id, estado: 'error_sincronizacion', error: err.message })
+    }
+  }
+
+  return { procesadas: listas.length, publicadas, fallidas, detalles }
+}
+
+function startZernioSyncPolling() {
+  if (zernioSyncInterval) return
+  setTimeout(async () => {
+    try {
+      await syncZernioPropuestas()
+    } catch (err) {
+      console.warn('[Zernio] Aviso en chequeo inicial de publicaciones:', err)
+    }
+  }, 10000)
+
+  const INTERVAL_MS = 5 * 60 * 1000
+  zernioSyncInterval = setInterval(async () => {
+    try {
+      const res = await syncZernioPropuestas()
+      if (res.procesadas > 0) {
+        console.log(`[Zernio Polling] Sincronizadas ${res.publicadas}/${res.procesadas} propuestas (fallidas: ${res.fallidas})`)
+      }
+    } catch (err) {
+      console.error('[Zernio Polling] Error en ciclo:', err)
+    }
+  }, INTERVAL_MS)
+}
+
 app.whenReady().then(() => {
   try {
     dbInstance = connectDatabase()
@@ -380,6 +563,7 @@ app.whenReady().then(() => {
   registerIpcHandlers()
   createWindow()
   startTelemetryPolling()
+  startZernioSyncPolling()
 
   // Inicialización no bloqueante del motor WhatsApp Baileys + Bridge (127.0.0.1:4180)
   try {
@@ -405,6 +589,10 @@ app.on('window-all-closed', () => {
   if (telemetryInterval) {
     clearInterval(telemetryInterval)
     telemetryInterval = null
+  }
+  if (zernioSyncInterval) {
+    clearInterval(zernioSyncInterval)
+    zernioSyncInterval = null
   }
   try { stopWaEngine() } catch {}
   try { closeDatabase() } catch {}

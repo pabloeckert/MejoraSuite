@@ -28,6 +28,7 @@ import {
   Loader2,
   Info,
   AlertTriangle,
+  Clock,
 } from "lucide-react";
 import {
   useApproveProposal,
@@ -157,11 +158,13 @@ export function ProposalDetailDialog({
   // heredan el narrowing del early-return de arriba).
   const proposal: ProposalDetail = proposalProp;
 
-  const isPublished = proposal.status === "published";
-  const isScheduled = proposal.status === "scheduled";
-  const isPending = proposal.status === "pending";
-  const isApproved = proposal.status === "approved";
-  const isRejected = proposal.status === "rejected";
+  const isPublished = proposal.status === "published" || proposal.status === "publicado";
+  const isScheduled = proposal.status === "scheduled" || proposal.status === "programado";
+  const isPending = proposal.status === "pending" || proposal.status === "pendiente_revision" || proposal.status === "borrador";
+  const isApproved = proposal.status === "approved" || proposal.status === "aprobado";
+  const isRejected = proposal.status === "rejected" || proposal.status === "rechazado";
+  const isTimeout = proposal.status === "congelado_por_timeout";
+  const isSyncError = proposal.status === "error_sincronizacion";
 
   const fullCopy = [proposal.hook, "", proposal.body, "", proposal.cta, "", ...(proposal.hashtags || [])]
     .filter((l) => l !== null && l !== undefined)
@@ -330,14 +333,39 @@ export function ProposalDetailDialog({
             <PipelineBadge format={proposal.format} />
             <Badge variant="outline">{proposal.format || "post"}</Badge>
             <Badge
-              variant={isPublished ? "default" : isRejected ? "destructive" : isScheduled ? "default" : "secondary"}
+              variant={
+                isPublished
+                  ? "default"
+                  : isRejected || isSyncError
+                  ? "destructive"
+                  : isTimeout
+                  ? "outline"
+                  : isScheduled
+                  ? "default"
+                  : "secondary"
+              }
+              className={
+                isTimeout
+                  ? "border-amber-500 bg-amber-500/10 text-amber-500 font-semibold"
+                  : isSyncError
+                  ? "bg-rose-500/20 text-rose-400 border-rose-500/40 font-semibold"
+                  : ""
+              }
             >
               {{
                 pending: "Pendiente",
+                pendiente_revision: "Pendiente de revisión",
+                borrador: "Borrador",
                 approved: "Aprobada",
+                aprobado: "Aprobada",
                 rejected: "Rechazada",
+                rechazado: "Rechazada",
                 scheduled: "● En vivo — se publica sola",
+                programado: "● En vivo — se publica sola",
                 published: "Publicada",
+                publicado: "Publicada",
+                congelado_por_timeout: "⚠️ Congelado por Timeout",
+                error_sincronizacion: "❌ Error de Sincronización",
               }[proposal.status || "pending"] || proposal.status}
             </Badge>
           </div>
@@ -376,6 +404,26 @@ export function ProposalDetailDialog({
             <p className="rounded-md border border-destructive/30 bg-destructive/5 p-2.5 text-xs text-destructive">
               Motivo de rechazo: {proposal.rejection_reason}
             </p>
+          )}
+
+          {isTimeout && (
+            <div className="flex items-start gap-2.5 rounded-md border border-amber-500/40 bg-amber-500/10 p-3 text-xs text-amber-500">
+              <Clock className="mt-0.5 h-4 w-4 flex-shrink-0 text-amber-500" />
+              <div>
+                <span className="font-semibold block mb-0.5">Propuesta congelada por expiración</span>
+                <span>La fecha programada caducó antes de que la propuesta fuera aprobada o enviada a publicación. Podés reprogramarla o reactivarla a borrador/revisión.</span>
+              </div>
+            </div>
+          )}
+
+          {isSyncError && (
+            <div className="flex items-start gap-2.5 rounded-md border border-destructive/40 bg-destructive/10 p-3 text-xs text-destructive">
+              <AlertTriangle className="mt-0.5 h-4 w-4 flex-shrink-0" />
+              <div>
+                <span className="font-semibold block mb-0.5">Falla de sincronización remota</span>
+                <span>Ocurrió un error al despachar la publicación hacia la plataforma de destino o Zernio. Se protegió el registro local para evitar publicaciones duplicadas.</span>
+              </div>
+            </div>
           )}
 
           {isPublished && (
@@ -483,14 +531,14 @@ export function ProposalDetailDialog({
                   Cancelar publicación
                 </Button>
               )}
-              {isRejected && (
+              {(isRejected || isTimeout || isSyncError) && (
                 <Button size="sm" onClick={handleReactivate} disabled={reactivateMutation.isPending}>
                   {reactivateMutation.isPending ? (
                     <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
                   ) : (
                     <Repeat className="mr-1.5 h-3.5 w-3.5" />
                   )}
-                  Reactivar
+                  {isTimeout ? "Descongelar / Reactivar" : isSyncError ? "Reintentar / Reactivar" : "Reactivar"}
                 </Button>
               )}
               <Button size="sm" variant="outline" onClick={() => setIsEditing(true)}>
@@ -529,12 +577,18 @@ export function ProposalDetailDialog({
             </div>
           )}
 
-          {/* AGENDAR (todavía sin fecha) / REPROGRAMAR (ya programada) */}
-          {!isPublished && !isEditing && (isScheduled || isPending || isApproved) && (
+          {/* AGENDAR (todavía sin fecha) / REPROGRAMAR (ya programada, con error de sync o vencida) */}
+          {!isPublished && !isEditing && (isScheduled || isPending || isApproved || isTimeout || isSyncError) && (
             <div className="space-y-2 rounded-md border border-border p-3">
               <Label className="flex items-center gap-1.5">
-                {isScheduled ? <Repeat className="h-3.5 w-3.5" /> : <Calendar className="h-3.5 w-3.5" />}
-                {isScheduled ? "Reprogramar" : "Agendar"}
+                {isScheduled || isSyncError || isTimeout ? <Repeat className="h-3.5 w-3.5" /> : <Calendar className="h-3.5 w-3.5" />}
+                {isScheduled
+                  ? "Reprogramar"
+                  : isSyncError
+                  ? "Corregir fecha y reprogramar"
+                  : isTimeout
+                  ? "Reprogramar fecha expirada"
+                  : "Agendar"}
               </Label>
               <Input
                 type="datetime-local"
@@ -548,7 +602,7 @@ export function ProposalDetailDialog({
                   Esto se publica en menos de 30 minutos, sin más revisión — confirmá que la fecha/hora es la correcta.
                 </p>
               )}
-              {!isScheduled && (
+              {!(isScheduled || isTimeout || isSyncError) && (
                 <Select value={scheduleOferta} onValueChange={setScheduleOferta}>
                   <SelectTrigger>
                     <SelectValue placeholder="Dimensión del servicio (de dónde sale la foto)..." />
@@ -563,14 +617,14 @@ export function ProposalDetailDialog({
                 </Select>
               )}
               <div className="flex justify-end">
-                {isScheduled ? (
+                {isScheduled || isTimeout || isSyncError ? (
                   <Button
                     size="sm"
                     onClick={handleReschedule}
                     disabled={!scheduleDate || rescheduleMutation.isPending}
                   >
                     {rescheduleMutation.isPending && <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />}
-                    Guardar nueva fecha
+                    {isSyncError ? "Guardar y Reprogramar" : "Guardar nueva fecha"}
                   </Button>
                 ) : (
                   <Button

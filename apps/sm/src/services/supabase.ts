@@ -9,7 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import type { ProposalDetail } from "@/components/ProposalDetailDialog";
 import type { DocRow } from "@/shared/types";
 import type { Database } from "@/integrations/supabase/types";
-import { isElectronLocal, fetchPropuestasFromSqlite, createPropuestaInSqlite } from "@/lib/nucleoAdapter";
+import { isElectronLocal, fetchPropuestasFromSqlite, createPropuestaInSqlite, updatePropuestaEstadoInSqlite } from "@/lib/nucleoAdapter";
 
 export type ProposalInsert = Database["public"]["Tables"]["proposals"]["Insert"];
 
@@ -269,41 +269,66 @@ export const proposalsApi = {
     );
   },
 
-  approve: (id: string) =>
-    supabase.from("proposals").update({ status: "approved" }).eq("id", id),
+  approve: async (id: string) => {
+    if (isElectronLocal()) {
+      await updatePropuestaEstadoInSqlite(Number(id), 'aprobado');
+      return { data: null, error: null };
+    }
+    return supabase.from("proposals").update({ status: "approved" }).eq("id", id);
+  },
 
-  reject: (id: string, reason: string) =>
-    supabase
+  reject: async (id: string, reason: string) => {
+    if (isElectronLocal()) {
+      await updatePropuestaEstadoInSqlite(Number(id), 'rechazado');
+      return { data: null, error: null };
+    }
+    return supabase
       .from("proposals")
       .update({ status: "rejected", rejection_reason: reason })
-      .eq("id", id),
+      .eq("id", id);
+  },
 
-  schedule: (id: string, date: string, oferta: string) =>
-    supabase
+  schedule: async (id: string, date: string, oferta: string) => {
+    if (isElectronLocal()) {
+      await updatePropuestaEstadoInSqlite(Number(id), 'programado', date);
+      return { data: null, error: null };
+    }
+    return supabase
       .from("proposals")
       .update({ status: "scheduled", scheduled_at: date, oferta })
-      .eq("id", id),
+      .eq("id", id);
+  },
 
   // Monitor de reversión (PLAN_AUTONOMIA.md Fase 2): cancela una propuesta
   // todavía no publicada (autoagendada o programada a mano) antes de que el
   // cron de publish-scheduled-posts.yml la levante. Para una ya publicada,
   // la reversión es scripts/manage-post.mjs (workflow_dispatch), no esto.
-  cancel: (id: string) =>
-    supabase
+  cancel: async (id: string) => {
+    if (isElectronLocal()) {
+      await updatePropuestaEstadoInSqlite(Number(id), 'rechazado');
+      return { data: null, error: null };
+    }
+    return supabase
       .from("proposals")
       .update({ status: "rejected", rejection_reason: "Cancelada antes de publicar" })
-      .eq("id", id),
+      .eq("id", id);
+  },
 
   // Recuperar una propuesta rechazada/cancelada (B2, auditoría 2026-08-31).
   // Vuelve a `pending` y limpia scheduled_at/rejection_reason — desde ahí se
   // puede volver a aprobar/agendar. No toca `published` (no hay reactivación
   // de algo que ya salió).
-  reactivate: (id: string) =>
-    supabase
+  reactivate: async (id: string) => {
+    if (isElectronLocal()) {
+      await updatePropuestaEstadoInSqlite(Number(id), 'pendiente_revision');
+      return { data: null, error: null };
+    }
+    return supabase
       .from("proposals")
       .update({ status: "pending", scheduled_at: null, rejection_reason: null })
       .eq("id", id)
-      .neq("status", "published"),
+      .neq("status", "published");
+  },
 
   pending: () =>
     supabase
@@ -322,8 +347,13 @@ export const proposalsApi = {
 
   remove: (id: string) => supabase.from("proposals").delete().eq("id", id),
 
-  reschedule: (id: string, date: string) =>
-    supabase.from("proposals").update({ scheduled_at: date }).eq("id", id),
+  reschedule: async (id: string, date: string) => {
+    if (isElectronLocal()) {
+      await updatePropuestaEstadoInSqlite(Number(id), 'programado', date);
+      return { data: null, error: null };
+    }
+    return supabase.from("proposals").update({ scheduled_at: date }).eq("id", id);
+  },
 
   // Valores reales que produce el pipeline (post | carrusel | historia) —
   // no reel/story (legacy del CHECK constraint, sin caller real) ni video

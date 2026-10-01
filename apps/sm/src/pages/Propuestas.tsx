@@ -26,13 +26,29 @@ import {
   Send,
   XCircle,
   Recycle,
+  AlertTriangle,
+  ShieldAlert,
+  RotateCcw,
+  Info,
+  Sparkles,
 } from "lucide-react";
 import { RecycleTab } from "@/components/RecycleTab";
-import { useProposals, usePendingProposals, useTemplates, useCreateTemplate, useUpdateTemplate, useDeleteTemplate } from "@/hooks/useProposals";
+import {
+  useProposals,
+  usePendingProposals,
+  useTemplates,
+  useCreateTemplate,
+  useUpdateTemplate,
+  useDeleteTemplate,
+} from "@/hooks/useProposals";
+import { useQueryClient } from "@tanstack/react-query";
+import { checkTimeoutPropuestasInSqlite, forceZernioSyncInSqlite } from "@/lib/nucleoAdapter";
+import { cn } from "@/lib/utils";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { toast } from "@/components/ui/use-toast";
 import { PipelineBadge } from "@/components/PipelineBadge";
 import { ProposalDetailDialog, type ProposalDetail } from "@/components/ProposalDetailDialog";
+import { CyborgEditor } from "@/components/CyborgEditor";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 
 // Filtro por tipo de posteo, sobre el campo proposals.format. "historia" es
@@ -50,12 +66,31 @@ const FORMATOS: { value: string; label: string }[] = [
 
 const TEMPLATE_FORMATS = FORMATOS.filter((f) => f.value !== "all");
 
-const STATUS_META: Record<string, { label: string; variant: "default" | "secondary" | "outline" | "destructive" }> = {
+const STATUS_META: Record<
+  string,
+  { label: string; variant: "default" | "secondary" | "outline" | "destructive"; className?: string }
+> = {
   pending: { label: "Pendiente", variant: "secondary" },
+  pendiente_revision: { label: "Pendiente", variant: "secondary" },
+  borrador: { label: "Borrador", variant: "secondary" },
   approved: { label: "Aprobada", variant: "default" },
+  aprobado: { label: "Aprobada", variant: "default" },
   rejected: { label: "Rechazada", variant: "destructive" },
+  rechazado: { label: "Rechazada", variant: "destructive" },
   scheduled: { label: "Programada", variant: "outline" },
+  programado: { label: "Programada", variant: "outline" },
   published: { label: "Publicada", variant: "default" },
+  publicado: { label: "Publicada", variant: "default" },
+  congelado_por_timeout: {
+    label: "Congelado Timeout",
+    variant: "outline",
+    className: "border-amber-500 bg-amber-500/10 text-amber-500 font-semibold",
+  },
+  error_sincronizacion: {
+    label: "Error Sincronización",
+    variant: "destructive",
+    className: "bg-rose-500/20 text-rose-400 border-rose-500/40 font-semibold",
+  },
 };
 
 export default function Propuestas() {
@@ -79,6 +114,7 @@ function PropuestasContent() {
   const [selectedProposalId, setSelectedProposalId] = useState<string | null>(null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [formatFilter, setFormatFilter] = useState<string>("all");
+  const [isCyborgOpen, setIsCyborgOpen] = useState(false);
 
   // Interconexión entre secciones: /propuestas?id=<uuid> abre el detalle
   // directo — lo usa Monitor (y cualquier otro lado que enlace a una pieza
@@ -116,19 +152,227 @@ function PropuestasContent() {
   const filteredProposals: ProposalDetail[] = (allProposals || []).filter(matchesFormat);
   const filteredPending: ProposalDetail[] = (pendingProposals || []).filter(matchesFormat);
 
-  const approved = filteredProposals.filter((p) => p.status === "approved");
-  const scheduled = filteredProposals.filter((p) => p.status === "scheduled");
+  const approved = filteredProposals.filter((p) => p.status === "approved" || p.status === "aprobado");
+  const scheduled = filteredProposals.filter((p) => p.status === "scheduled" || p.status === "programado");
+  const attentionRequired = filteredProposals.filter(
+    (p) => p.status === "congelado_por_timeout" || p.status === "error_sincronizacion"
+  );
+
+  const queryClient = useQueryClient();
+  const [defensiveTelemetry, setDefensiveTelemetry] = useState<{
+    message: string;
+    cause: string;
+    timestamp: string;
+  } | null>(null);
+  const [isVerifyingTimeouts, setIsVerifyingTimeouts] = useState(false);
+
+  // Verificación y blindaje defensivo de timeouts en SQLite al montar
+  useEffect(() => {
+    let mounted = true;
+    checkTimeoutPropuestasInSqlite()
+      .then((res) => {
+        if (mounted && res && res.congeladas > 0) {
+          queryClient.invalidateQueries({ queryKey: ["proposals"] });
+          setDefensiveTelemetry({
+            message: `Blindaje de consistencia: se detectaron ${res.congeladas} propuestas cuya fecha de ejecución expiró sin estar aprobadas.`,
+            cause: `Mecanismo de timeout activado. Registros congelados preventivamente: ${res.detalles.join(" | ")}`,
+            timestamp: new Date().toLocaleTimeString("es-AR"),
+          });
+          toast({
+            title: "Blindaje Defensivo Activado",
+            description: `Se congelaron ${res.congeladas} propuestas vencidas para evitar publicaciones o despachos accidentales.`,
+            variant: "destructive",
+          });
+        }
+      })
+      .catch((err) => {
+        if (mounted) {
+          setDefensiveTelemetry({
+            message: "Falla al verificar integridad de propuestas en la base de datos local.",
+            cause: err instanceof Error ? err.message : String(err),
+            timestamp: new Date().toLocaleTimeString("es-AR"),
+          });
+        }
+      });
+    return () => {
+      mounted = false;
+    };
+  }, [queryClient]);
+
+  const handleManualTimeoutCheck = async () => {
+    setIsVerifyingTimeouts(true);
+    try {
+      const res = await checkTimeoutPropuestasInSqlite();
+      if (res && res.congeladas > 0) {
+        queryClient.invalidateQueries({ queryKey: ["proposals"] });
+        setDefensiveTelemetry({
+          message: `Auditoría completada: se congelaron ${res.congeladas} propuestas vencidas.`,
+          cause: res.detalles.join(" | "),
+          timestamp: new Date().toLocaleTimeString("es-AR"),
+        });
+        toast({
+          title: "Control de Timeouts Ejecutado",
+          description: `Se congelaron ${res.congeladas} propuestas expiradas.`,
+        });
+      } else {
+        toast({
+          title: "Consistencia Verificada",
+          description: "No se encontraron propuestas programadas expiradas pendientes de congelamiento.",
+        });
+      }
+    } catch (err) {
+      setDefensiveTelemetry({
+        message: "Error durante la ejecución del control de timeouts.",
+        cause: err instanceof Error ? err.message : String(err),
+        timestamp: new Date().toLocaleTimeString("es-AR"),
+      });
+      toast({
+        title: "Error de Verificación",
+        description: "No se pudo completar el control de timeouts.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsVerifyingTimeouts(false);
+    }
+  };
+
+  const [isSyncingZernio, setIsSyncingZernio] = useState(false);
+
+  const handleForceZernioSync = async () => {
+    setIsSyncingZernio(true);
+    try {
+      const res = await forceZernioSyncInSqlite();
+      queryClient.invalidateQueries({ queryKey: ["proposals"] });
+      if (res && res.success) {
+        if (res.procesadas === 0) {
+          toast({
+            title: "Sincronización Zernio",
+            description: "No hay propuestas programadas listas para publicar en este momento.",
+          });
+        } else {
+          toast({
+            title: "Sincronización Zernio Completada",
+            description: `${res.publicadas} publicadas exitosamente, ${res.fallidas} con error de despacho.`,
+            variant: res.fallidas && res.fallidas > 0 ? "destructive" : "default",
+          });
+          if (res.fallidas && res.fallidas > 0) {
+            setDefensiveTelemetry({
+              message: `Despacho Zernio con inconsistencias: ${res.fallidas} de ${res.procesadas} propuestas no pudieron publicarse.`,
+              cause:
+                res.detalles
+                  ?.filter((d) => d.estado === "error_sincronizacion")
+                  .map((d) => `ID #${d.id}: ${d.error}`)
+                  .join(" | ") || "Falla devuelta por el API de Zernio.",
+              timestamp: new Date().toLocaleTimeString("es-AR"),
+            });
+          }
+        }
+      } else {
+        const errorMsg = res?.error || "Falla al comunicar con el motor despachador Zernio.";
+        setDefensiveTelemetry({
+          message: "No se pudo sincronizar con Zernio.",
+          cause: errorMsg,
+          timestamp: new Date().toLocaleTimeString("es-AR"),
+        });
+        toast({
+          title: "Falla de Sincronización",
+          description: errorMsg,
+          variant: "destructive",
+        });
+      }
+    } catch (err) {
+      setDefensiveTelemetry({
+        message: "Error de conexión al forzar sincronización con Zernio.",
+        cause: err instanceof Error ? err.message : String(err),
+        timestamp: new Date().toLocaleTimeString("es-AR"),
+      });
+      toast({
+        title: "Error Inesperado",
+        description: "Ocurrió una excepción al despachar a Zernio.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSyncingZernio(false);
+    }
+  };
 
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">Propuestas de Contenido</h1>
-        <p className="mt-1 text-muted-foreground">
-          Los posts y carruseles de feed se agendan y publican solos (mirá el badge "Se publica solo" en cada
-          pieza). Esta pantalla es el monitor: click en cualquier pieza abre el detalle, con todas las acciones
-          reales — aprobar, rechazar, agendar, editar, borrar o convertir formato.
-        </p>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Propuestas de Contenido</h1>
+          <p className="mt-1 text-muted-foreground">
+            Los posts y carruseles de feed se agendan y publican solos (mirá el badge "Se publica solo" en cada
+            pieza). Esta pantalla es el monitor: click en cualquier pieza abre el detalle, con todas las acciones
+            reales — aprobar, rechazar, agendar, editar, borrar o convertir formato.
+          </p>
+        </div>
+        <div className="flex flex-wrap gap-2 shrink-0 self-start sm:self-center">
+          <Button
+            variant="default"
+            size="sm"
+            className="gap-1.5 bg-indigo-600 hover:bg-indigo-700 text-white font-medium shadow-sm"
+            onClick={() => setIsCyborgOpen(true)}
+          >
+            <Sparkles className="h-3.5 w-3.5" />
+            Nueva Propuesta Cyborg
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            className="gap-1.5"
+            onClick={handleForceZernioSync}
+            disabled={isSyncingZernio}
+          >
+            {isSyncingZernio ? (
+              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+            ) : (
+              <Send className="h-3.5 w-3.5" />
+            )}
+            Forzar Sincronización Zernio
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            className="gap-1.5"
+            onClick={handleManualTimeoutCheck}
+            disabled={isVerifyingTimeouts}
+          >
+            {isVerifyingTimeouts ? (
+              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+            ) : (
+              <RotateCcw className="h-3.5 w-3.5 text-muted-foreground" />
+            )}
+            Auditar Timeouts
+          </Button>
+        </div>
       </div>
+
+      {defensiveTelemetry && (
+        <div className="rounded-lg border border-amber-500/40 bg-amber-500/10 p-4 text-amber-500">
+          <div className="flex items-start justify-between gap-3">
+            <div className="flex items-start gap-3">
+              <ShieldAlert className="mt-0.5 h-5 w-5 shrink-0 text-amber-500" />
+              <div className="space-y-1">
+                <p className="font-semibold text-sm">Modo Defensivo Activado — Telemetría Local</p>
+                <p className="text-xs text-muted-foreground">{defensiveTelemetry.message}</p>
+                <p className="font-mono text-[11px] bg-background/80 text-foreground rounded px-2 py-1 border border-border inline-block">
+                  Causa: {defensiveTelemetry.cause}
+                </p>
+                <p className="text-[10px] text-muted-foreground">Registrado a las {defensiveTelemetry.timestamp}</p>
+              </div>
+            </div>
+            <Button
+              size="sm"
+              variant="outline"
+              className="h-7 text-xs border-amber-500/30 hover:bg-amber-500/20"
+              onClick={() => setDefensiveTelemetry(null)}
+            >
+              Cerrar
+            </Button>
+          </div>
+        </div>
+      )}
 
       <div className="flex flex-wrap gap-2">
         {FORMATOS.map((f) => (
@@ -162,6 +406,17 @@ function PropuestasContent() {
           <TabsTrigger value="scheduled">
             <Calendar className="h-3.5 w-3.5" />
             Programadas
+          </TabsTrigger>
+          <TabsTrigger value="attention" className="gap-1.5">
+            <ShieldAlert
+              className={cn("h-3.5 w-3.5", attentionRequired.length > 0 ? "text-amber-500" : "text-muted-foreground")}
+            />
+            Atención
+            {attentionRequired.length > 0 && (
+              <Badge variant="destructive" className="ml-1 h-5 px-1.5 text-[10px] bg-amber-600">
+                {attentionRequired.length}
+              </Badge>
+            )}
           </TabsTrigger>
           <TabsTrigger value="all">Todas</TabsTrigger>
           <TabsTrigger value="timeline" className="gap-1.5">
@@ -248,6 +503,37 @@ function PropuestasContent() {
           )}
         </TabsContent>
 
+        <TabsContent value="attention" className="mt-6">
+          <div className="mb-4 rounded-md border border-amber-500/30 bg-amber-500/10 p-3 text-xs text-amber-500 flex items-start gap-2">
+            <Info className="h-4 w-4 mt-0.5 shrink-0" />
+            <div>
+              <p className="font-semibold">Blindaje Defensivo y Prevención de Errores Masivos</p>
+              <p className="text-muted-foreground mt-0.5">
+                Las propuestas en esta sección requieren revisión manual porque su tiempo programado caducó sin aprobación o sufrieron un error al despacharse. Los reintentos masivos están deshabilitados preventivamente: abrí cada pieza individualmente para reactivarla o corregirla.
+              </p>
+            </div>
+          </div>
+          {attentionRequired.length === 0 ? (
+            <EmptyState
+              icon={CheckCircle}
+              text="No hay propuestas que requieran atención defensiva."
+              sub="Todo el contenido programado y en cola se encuentra dentro de sus plazos nominales."
+            />
+          ) : (
+            <div className="space-y-3">
+              {attentionRequired.map((p) => (
+                <ProposalListItem
+                  key={p.id}
+                  proposal={p}
+                  onOpen={() => setSelectedProposalId(p.id)}
+                  onCopy={() => handleCopy(p)}
+                  copied={copiedId === p.id}
+                />
+              ))}
+            </div>
+          )}
+        </TabsContent>
+
         <TabsContent value="all" className="mt-6">
           {filteredProposals.length === 0 ? (
             <EmptyState
@@ -297,6 +583,11 @@ function PropuestasContent() {
         open={!!selectedProposal}
         onOpenChange={(open) => !open && setSelectedProposalId(null)}
       />
+
+      <CyborgEditor
+        open={isCyborgOpen}
+        onOpenChange={setIsCyborgOpen}
+      />
     </div>
   );
 }
@@ -315,35 +606,49 @@ const TIMELINE_STAGES: {
     key: "revision",
     label: "En revisión",
     icon: Clock,
-    match: (s) => s === "pending" || s === "needs_review" || !s,
+    match: (s) => s === "pending" || s === "pendiente_revision" || s === "borrador" || s === "needs_review" || !s,
     dateOf: (p) => p.created_at ?? null,
   },
   {
     key: "aprobada",
     label: "Aprobadas — esperando agenda",
     icon: CheckCircle,
-    match: (s) => s === "approved",
+    match: (s) => s === "approved" || s === "aprobado",
     dateOf: (p) => p.created_at ?? null,
   },
   {
     key: "programada",
     label: "Programadas",
     icon: Calendar,
-    match: (s) => s === "scheduled",
+    match: (s) => s === "scheduled" || s === "programado",
     dateOf: (p) => p.scheduled_at ?? p.created_at ?? null,
+  },
+  {
+    key: "congelada",
+    label: "Congeladas por Timeout",
+    icon: Clock,
+    match: (s) => s === "congelado_por_timeout",
+    dateOf: (p) => p.scheduled_at ?? p.created_at ?? null,
+  },
+  {
+    key: "error_sync",
+    label: "Error de Sincronización",
+    icon: AlertTriangle,
+    match: (s) => s === "error_sincronizacion",
+    dateOf: (p) => p.created_at ?? null,
   },
   {
     key: "publicada",
     label: "Publicadas",
     icon: Send,
-    match: (s) => s === "published",
+    match: (s) => s === "published" || s === "publicado",
     dateOf: (p) => p.published_at ?? p.scheduled_at ?? p.created_at ?? null,
   },
   {
     key: "frenada",
     label: "Frenadas",
     icon: XCircle,
-    match: (s) => s === "rejected",
+    match: (s) => s === "rejected" || s === "rechazado",
     dateOf: (p) => p.created_at ?? null,
   },
 ];
@@ -428,10 +733,21 @@ function ProposalListItem({
   onCopy: () => void;
   copied: boolean;
 }) {
-  const status = STATUS_META[proposal.status || "pending"] || STATUS_META.pending;
+  const status = STATUS_META[proposal.status || "pending"] || {
+    label: proposal.status || "Pendiente",
+    variant: "secondary" as const,
+  };
+  const isTimeout = proposal.status === "congelado_por_timeout";
+  const isSyncError = proposal.status === "error_sincronizacion";
 
   return (
-    <Card className="transition-colors hover:bg-muted/40">
+    <Card
+      className={cn(
+        "transition-colors hover:bg-muted/40",
+        isTimeout && "border-amber-500/40 bg-amber-500/[0.04]",
+        isSyncError && "border-rose-500/40 bg-rose-500/[0.04]"
+      )}
+    >
       <CardContent className="flex items-start justify-between gap-3 p-4">
         <button type="button" onClick={onOpen} className="min-w-0 flex-1 text-left">
           <div className="mb-1.5 flex flex-wrap items-center gap-1.5">
@@ -439,9 +755,21 @@ function ProposalListItem({
             <Badge variant="outline" className="text-[10px]">
               {proposal.format || "post"}
             </Badge>
-            <Badge variant={status.variant} className="text-[10px]">
+            <Badge variant={status.variant} className={cn("text-[10px]", status.className)}>
               {status.label}
             </Badge>
+            {isTimeout && (
+              <span className="flex items-center text-[10px] text-amber-500 font-medium">
+                <Clock className="mr-1 h-3 w-3" />
+                Vencida sin aprobación
+              </span>
+            )}
+            {isSyncError && (
+              <span className="flex items-center text-[10px] text-rose-500 font-medium">
+                <AlertTriangle className="mr-1 h-3 w-3" />
+                Error de sincronización
+              </span>
+            )}
           </div>
           <p className="truncate text-sm font-semibold">{proposal.hook || proposal.title || "Sin título"}</p>
           <p className="mt-1 line-clamp-2 text-xs text-muted-foreground">{proposal.body}</p>
