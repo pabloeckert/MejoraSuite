@@ -206,9 +206,11 @@ function startTelemetryPolling() {
 
 function createWindow() {
   mainWindow = new BrowserWindow({
-    width: 920,
-    height: 680,
-    resizable: false,
+    width: 1280,
+    height: 820,
+    minWidth: 960,
+    minHeight: 680,
+    resizable: true,
     icon: path.join(__dirname, '..', 'public', 'brand', process.platform === 'win32' ? 'icon.ico' : 'isotipo-color.png'),
     webPreferences: {
       preload: path.join(__dirname, 'preload.cjs'),
@@ -217,11 +219,29 @@ function createWindow() {
     },
   })
   mainWindow.setMenuBarVisibility(false)
-  const distIndex = path.join(__dirname, '..', 'dist', 'index.html');
-  if (fs.existsSync(distIndex)) {
-    mainWindow.loadFile(distIndex);
+
+  mainWindow.webContents.on('console-message', (_event, level, message, line, sourceId) => {
+    console.log(`[Renderer] [level=${level}] ${message} (${sourceId}:${line})`)
+  })
+
+  const devServerUrl = process.env.VITE_DEV_SERVER_URL || (process.env.NODE_ENV === 'development' ? 'http://localhost:5170' : null)
+
+  const loadLocalBundle = () => {
+    const distIndex = path.join(__dirname, '..', 'dist', 'index.html')
+    if (fs.existsSync(distIndex)) {
+      mainWindow.loadFile(distIndex)
+    } else {
+      mainWindow.loadFile(path.join(__dirname, '..', 'public', 'index.html'))
+    }
+  }
+
+  if (devServerUrl) {
+    mainWindow.loadURL(devServerUrl).catch((err) => {
+      console.warn('[MejoraSuite] Aviso dev server', err.message)
+      loadLocalBundle()
+    })
   } else {
-    mainWindow.loadFile(path.join(__dirname, '..', 'public', 'index.html'));
+    loadLocalBundle()
   }
 
   mainWindow.webContents.on('did-finish-load', async () => {
@@ -429,6 +449,97 @@ function registerIpcHandlers() {
     return getMetricas(propuestaId)
   })
 
+  ipcMain.handle('suite:sm:getSemillasOro', () => {
+    try {
+      const rows = querySql(`
+        SELECT p.id, p.titulo, p.contenido, p.canal_id, p.publicado_el,
+               COALESCE(m.alcance, 0) as alcance,
+               COALESCE(m.clics, 0) as clics,
+               COALESCE(m.interacciones, 0) as interacciones,
+               COALESCE(m.compartidos, 0) as compartidos,
+               MAX(CASE WHEN m.alcance > 0 THEN (CAST(m.clics AS REAL) / m.alcance) ELSE 0 END) AS tasa_conversion
+        FROM sm_propuestas p
+        LEFT JOIN sm_metricas m ON p.id = m.propuesta_id
+        WHERE p.estado = 'publicado'
+        GROUP BY p.id, p.titulo, p.contenido
+        ORDER BY tasa_conversion DESC, clics DESC, interacciones DESC
+        LIMIT 3
+      `)
+      return rows.map((r) => {
+        let hook = '', body = '', cta = ''
+        try {
+          const parsed = JSON.parse(r.contenido)
+          hook = parsed.hook || ''
+          body = parsed.body || ''
+          cta = parsed.cta || ''
+        } catch {
+          body = r.contenido
+        }
+        return {
+          id: r.id,
+          titulo: r.titulo,
+          hook,
+          body,
+          cta,
+          canal_id: r.canal_id,
+          alcance: r.alcance,
+          clics: r.clics,
+          interacciones: r.interacciones,
+          compartidos: r.compartidos,
+          tasa_conversion: r.tasa_conversion,
+          publicado_el: r.publicado_el
+        }
+      })
+    } catch (err) {
+      console.warn('[MejoraSuite] Error al obtener semillas de oro:', err)
+      return []
+    }
+  })
+
+  ipcMain.handle('suite:sm:injectSemillasOro', (_e, semillas) => {
+    try {
+      const db = getDatabase()
+      if (!db) {
+        return { success: false, error: 'Base de datos SQLite no inicializada' }
+      }
+      if (!Array.isArray(semillas) || semillas.length === 0) {
+        return { success: false, error: 'No se enviaron semillas para inyectar' }
+      }
+
+      const stmtProp = db.prepare(`
+        INSERT OR REPLACE INTO sm_propuestas (
+          id, titulo, contenido, formato, estado, canal_id, hash_unico, publicado_el, creado_el, actualizado_el
+        ) VALUES (?, ?, ?, 'post', 'publicado', ?, ?, datetime('now', '-2 days'), datetime('now', '-3 days'), datetime('now'))
+      `)
+
+      const stmtMetr = db.prepare(`
+        INSERT OR REPLACE INTO sm_metricas (
+          id, propuesta_id, alcance, interacciones, clics, compartidos, registrado_el
+        ) VALUES (?, ?, ?, ?, ?, ?, datetime('now', '-2 days'))
+      `)
+
+      const tx = db.transaction(() => {
+        for (const s of semillas) {
+          const id = Number(s.id) || (100 + Math.floor(Math.random() * 900))
+          const contenidoJson = JSON.stringify({
+            hook: s.hook || '',
+            body: s.body || '',
+            cta: s.cta || ''
+          })
+          const hash = `hash_semilla_oro_${id}`
+          stmtProp.run(id, s.titulo || 'Sin Título', contenidoJson, s.canal_id || 3, hash)
+          stmtMetr.run(id, id, Number(s.alcance) || 1000, Number(s.interacciones) || 100, Number(s.clics) || 50, Number(s.compartidos) || 10)
+        }
+      })
+
+      tx()
+      return { success: true, count: semillas.length }
+    } catch (err) {
+      console.error('[MejoraSuite] Error al inyectar semillas en SQLite:', err)
+      return { success: false, error: err.message }
+    }
+  })
+
   // ==========================================
   // IA & Cyborg Editor (Gemini Pro) IPC Handlers
   // ==========================================
@@ -585,7 +696,7 @@ app.whenReady().then(() => {
   })
 })
 
-app.on('window-all-closed', () => {
+function cleanupResources() {
   if (telemetryInterval) {
     clearInterval(telemetryInterval)
     telemetryInterval = null
@@ -596,5 +707,13 @@ app.on('window-all-closed', () => {
   }
   try { stopWaEngine() } catch {}
   try { closeDatabase() } catch {}
+}
+
+app.on('before-quit', () => {
+  cleanupResources()
+})
+
+app.on('window-all-closed', () => {
+  cleanupResources()
   if (process.platform !== 'darwin') app.quit()
 })

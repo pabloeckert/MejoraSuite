@@ -3,8 +3,9 @@ import { Header } from './components/Header';
 import { TelemetryBar } from './components/TelemetryBar';
 import { LauncherMatrix } from './components/LauncherMatrix';
 import { SystemHealthModal } from './components/SystemHealthModal';
+import { SemillasOroModal } from './components/SemillasOroModal';
 import { fetchTelemetry, TelemetryData } from './services/telemetryService';
-import { ShieldCheck, Compass, Zap, Layers, Database, ArrowLeft, Briefcase, Sparkles, Share2, MessageCircle } from 'lucide-react';
+import { ShieldCheck, Compass, Zap, Layers, Database, ArrowLeft, Briefcase, Sparkles, Share2, MessageCircle, Award } from 'lucide-react';
 import { CrmApp, CrmNucleoWidget } from '@mejora/crm';
 import { ContactosApp, ContactosNucleoWidget } from '@mejora/contactos';
 import { SmApp } from '@mejora/sm';
@@ -34,6 +35,7 @@ export function App() {
   const [telemetry, setTelemetry] = useState<TelemetryData>(initialTelemetry);
   const [loading, setLoading] = useState(false);
   const [healthModalOpen, setHealthModalOpen] = useState(false);
+  const [semillasModalOpen, setSemillasModalOpen] = useState(false);
   const [dbStatus, setDbStatus] = useState<{ connected: boolean; tableCount: number; tables: string[] } | null>(null);
 
   const loadData = useCallback(async () => {
@@ -74,6 +76,7 @@ export function App() {
         loading={loading}
         onRefresh={loadData}
         onOpenHealth={() => setHealthModalOpen(true)}
+        onOpenSemillas={() => setSemillasModalOpen(true)}
         activeView={activeView}
         onViewChange={(v) => setActiveView(v)}
       />
@@ -94,6 +97,14 @@ export function App() {
                   <span>SQLite Núcleo Activo ({dbStatus.tableCount} Tablas)</span>
                 </div>
               )}
+              <button
+                onClick={() => setSemillasModalOpen(true)}
+                className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-mc-amarillo/10 border border-mc-amarillo/30 hover:border-mc-amarillo text-mc-amarillo text-xs font-spartan font-bold uppercase tracking-wider transition-colors cursor-pointer shadow-sm hover:bg-mc-amarillo/20"
+                title="Ver y configurar los 3 posts históricos con mayor conversión (ADN Ganador)"
+              >
+                <Award className="w-3.5 h-3.5" />
+                <span>Semillas de Oro (Cold Start Activo)</span>
+              </button>
             </div>
             <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-white tracking-tight uppercase font-spartan mb-3">
               Centro de Control <span className="text-mc-amarillo">de Conversión</span>
@@ -309,6 +320,14 @@ export function App() {
         <SystemHealthModal
           telemetry={telemetry}
           onClose={() => setHealthModalOpen(false)}
+        />
+      )}
+
+      {/* Semillas de Oro Modal */}
+      {semillasModalOpen && (
+        <SemillasOroModal
+          isOpen={semillasModalOpen}
+          onClose={() => setSemillasModalOpen(false)}
         />
       )}
 

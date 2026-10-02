@@ -1,4 +1,4 @@
-import { RefreshCw, Activity, ExternalLink, ShieldCheck, LayoutDashboard, Briefcase, Sparkles, Share2, MessageCircle } from 'lucide-react';
+import { RefreshCw, Activity, ExternalLink, ShieldCheck, LayoutDashboard, Briefcase, Sparkles, Share2, MessageCircle, Award } from 'lucide-react';
 import { TelemetryData } from '../services/telemetryService';
 
 interface HeaderProps {
@@ -6,6 +6,7 @@ interface HeaderProps {
   loading: boolean;
   onRefresh: () => void;
   onOpenHealth: () => void;
+  onOpenSemillas?: () => void;
   activeView?: 'hub' | 'crm' | 'contactos' | 'sm' | 'wa';
   onViewChange?: (view: 'hub' | 'crm' | 'contactos' | 'sm' | 'wa') => void;
 }
@@ -15,6 +16,7 @@ export const Header: React.FC<HeaderProps> = ({
   loading,
   onRefresh,
   onOpenHealth,
+  onOpenSemillas,
   activeView = 'hub',
   onViewChange,
 }) => {
@@ -107,6 +109,18 @@ export const Header: React.FC<HeaderProps> = ({
 
         {/* Right: Telemetry status & Actions */}
         <div className="flex items-center gap-3">
+          {/* Semillas de Oro Button */}
+          {onOpenSemillas && (
+            <button
+              onClick={onOpenSemillas}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-mc-amarillo/10 border border-mc-amarillo/30 hover:border-mc-amarillo text-xs font-bold text-mc-amarillo transition-all cursor-pointer shadow-sm hover:bg-mc-amarillo/20 font-spartan uppercase tracking-wider"
+              title="Administrar las 3 Semillas de Oro (Cold Start) para Gemini Pro"
+            >
+              <Award className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Semillas de Oro</span>
+            </button>
+          )}
+
           {/* Gateway Status Badge */}
           <button
             onClick={onOpenHealth}

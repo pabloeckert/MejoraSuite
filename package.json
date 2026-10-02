@@ -12,7 +12,10 @@
         "dev": "turbo run dev",
         "test": "turbo run test",
         "rebuild:sqlite": "electron-rebuild -f -w better-sqlite3",
-        "postinstall": "electron-rebuild -f -w better-sqlite3"
+        "postinstall": "electron-rebuild -f -w better-sqlite3",
+        "start": "powershell -NoProfile -ExecutionPolicy Bypass -File ./start-suite.ps1",
+        "suite": "powershell -NoProfile -ExecutionPolicy Bypass -File ./start-suite.ps1",
+        "seed:golden": "python ./scripts/inyectar_semillas.py"
     },
     "private": true,
     "packageManager": "npm@11.17.0",

@@ -49,6 +49,8 @@ contextBridge.exposeInMainWorld('suite', {
       forceZernioSync: () => ipcRenderer.invoke('suite:sm:forceZernioSync'),
       getCanales: () => ipcRenderer.invoke('suite:sm:getCanales'),
       getMetricas: (propuestaId) => ipcRenderer.invoke('suite:sm:getMetricas', propuestaId),
+      getSemillasOro: () => ipcRenderer.invoke('suite:sm:getSemillasOro'),
+      injectSemillasOro: (semillas) => ipcRenderer.invoke('suite:sm:injectSemillasOro', semillas),
     },
     wa: {
       getStatus: () => ipcRenderer.invoke('suite:wa:getStatus'),

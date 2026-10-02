@@ -48,6 +48,8 @@ export interface SuiteSmApi {
   forceZernioSync: () => Promise<{ success: boolean; procesadas?: number; publicadas?: number; fallidas?: number; error?: string }>;
   getCanales: () => Promise<any[]>;
   getMetricas: (propuestaId?: number) => Promise<any[]>;
+  getSemillasOro: () => Promise<any[]>;
+  injectSemillasOro: (semillas: any[]) => Promise<{ success: boolean; count?: number; error?: string }>;
 }
 
 declare global {

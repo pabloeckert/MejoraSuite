@@ -1,8 +1,8 @@
 # ESTADO ACTUAL DEL ECOSISTEMA MEJORASUITE
 
-**Fecha de Cierre:** 1 de Octubre de 2026  
+**Fecha de Cierre:** 2 de Octubre de 2026  
 **Entorno de Trabajo:** `C:\github\MejoraSuite`  
-**Estado General:** Monorepo Consolidado, Soberano, Estable y con WhatsApp Engine Asimilado  
+**Estado General:** Monorepo Consolidado, Soberano, Estable, Fricción Cero y con ADN Ganador (Semillas de Oro) Operativo  
 
 ---
 
@@ -85,6 +85,28 @@ La integración del motor de WhatsApp ha concluido con éxito siguiendo un crite
 
 ---
 
-## 5. Próximo Paso (Fase 4)
+## 5. Hito Alcanzado: Fase de Fricción Cero y Cold Start (Completada)
+
+Se resolvió la fricción operativa de terminales y el arranque en frío del motor estratégico, blindando la experiencia del usuario y estabilizando la interfaz gráfica:
+
+1. **Scripts de Arranque Automáticos de 1-Clic (`arrancar.ps1` y `arrancar.bat`):**
+   - Limpieza automática de puertos (`5170` para Vite y `4180` para el bridge de WhatsApp) con liquidación forzada de procesos zombies.
+   - Orquestación de Vite en segundo plano sin terminal invasiva (`-WindowStyle Hidden`).
+   - Sondeo sincronizado TCP en Loopback (`127.0.0.1:5170`) y apertura automática y sincronizada de Electron.
+   - Cierre limpio en bloque `finally` que elimina subprocesos de Vite y libera los puertos al cerrar la ventana.
+2. **Cold Start & Semillas de Oro (ADN Ganador B2B):**
+   - Creación del script SQL maestro idempotente (`semillas_oro.sql`) y script de inyección (`inyectar_semillas.bat` / `inyectar_semillas.py`).
+   - Inyección verificada de los 3 posts históricos con mayor conversión B2B (tasas del 6.46% al 7.54%) en SQLite local para alimentar el contexto de Gemini 1.5 Pro en MejoraSM.
+   - Interfaz gráfica interactiva `SemillasOroModal.tsx` conectada al `Header.tsx` y Hub para inspección, edición visual y recálculo de conversión en tiempo real.
+3. **Estabilización de Frontend (Resolución de Pantalla Blanca):**
+   - Corrección de desestructuración de `onOpenSemillas` en la firma de `Header.tsx` (eliminando `ReferenceError`).
+   - Fallbacks seguros a variables de entorno Supabase en `apps/crm/src/integrations/supabase/client.ts` (previniendo `Uncaught Error: supabaseUrl is required`).
+   - Inclusión de `export default SemillasOroModal` para compatibilidad de importaciones.
+   - Compilación en verde del bundle de producción de Vite (`npm run build --workspace=@mejora/shell`).
+
+---
+
+## 6. Próximo Paso (Fase 4)
 
 - **Distribución y Empaquetado:** Configurar `electron-builder` en `@mejora/shell` para generar el instalador final NSIS y versión portable para Windows 11.
+
