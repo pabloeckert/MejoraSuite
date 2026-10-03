@@ -197,7 +197,7 @@ export function DriveSyncDialog({ open, onOpenChange, onSyncSuccess }: DriveSync
           {/* RESULT SUMMARY */}
           {lastResult && (
             <div className="rounded-lg border border-emerald-500/30 bg-emerald-500/5 p-3.5 space-y-2.5">
-              <div className="flex items-center gap-1.5 text-xs font-semibold text-emerald-700 dark:text-emerald-400">
+              <div className="flex items-center gap-1.5 text-xs font-semibold text-emerald-700">
                 <CheckCircle2 className="h-4 w-4" />
                 Resumen de ingesta: {lastResult.synced} nuevas, {lastResult.skipped} ya registradas
               </div>

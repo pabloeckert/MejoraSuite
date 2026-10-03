@@ -39,9 +39,9 @@ import { enviarLeadACRM, extraerDatosDeTexto } from "@/services/contactosService
 const PLATFORM_LABEL: Record<string, string> = { instagram: "Instagram", facebook: "Facebook" };
 
 const SENTIMENT_STYLE: Record<string, { label: string; className: string }> = {
-  pregunta: { label: "Pregunta", className: "bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-200" },
-  negativo: { label: "Negativo", className: "bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-200" },
-  positivo: { label: "Positivo", className: "bg-green-100 text-green-800 dark:bg-green-950 dark:text-green-200" },
+  pregunta: { label: "Pregunta", className: "bg-blue-100 text-blue-800" },
+  negativo: { label: "Negativo", className: "bg-red-100 text-red-800" },
+  positivo: { label: "Positivo", className: "bg-green-100 text-green-800" },
   neutral: { label: "Neutral", className: "bg-muted text-muted-foreground" },
 };
 
@@ -118,7 +118,7 @@ export default function Conversaciones() {
             </span>
           )}
           {syncState?.last_error && (
-            <span className="text-[11px] text-red-600 dark:text-red-400">Error: {syncState.last_error}</span>
+            <span className="text-[11px] text-red-600">Error: {syncState.last_error}</span>
           )}
         </div>
       </div>
@@ -288,8 +288,8 @@ function ThreadCard({ thread, archivedView }: { thread: InboxThread; archivedVie
           </span>
           {sent && <Badge className={cn("border-0", sent.className)}>{sent.label}</Badge>}
           {incoming.persona_id && (
-            <Badge variant="outline" className="border-emerald-500/40 bg-emerald-50 text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-400 font-medium">
-              <CheckCircle2 className="mr-1 h-3 w-3 inline text-emerald-600 dark:text-emerald-400" />
+            <Badge variant="outline" className="border-emerald-500/40 bg-emerald-50 text-emerald-700 font-medium">
+              <CheckCircle2 className="mr-1 h-3 w-3 inline text-emerald-600" />
               Derivado a CRM
             </Badge>
           )}
@@ -331,7 +331,7 @@ function ThreadCard({ thread, archivedView }: { thread: InboxThread; archivedVie
         </div>
 
         {answered && !archivedView && (
-          <p className="flex items-center gap-1 text-xs text-green-700 dark:text-green-400">
+          <p className="flex items-center gap-1 text-xs text-green-700">
             <CheckCircle2 className="h-3.5 w-3.5" /> Respondido
           </p>
         )}
@@ -356,7 +356,7 @@ function ThreadCard({ thread, archivedView }: { thread: InboxThread; archivedVie
               className={cn(
                 "h-9",
                 isDerived
-                  ? "border-emerald-500/40 text-emerald-700 bg-emerald-50/50 dark:bg-emerald-950/20 dark:text-emerald-400 font-medium"
+                  ? "border-emerald-500/40 text-emerald-700 bg-emerald-50/50 font-medium"
                   : "border-primary/30 hover:bg-primary/5 text-primary"
               )}
               onClick={handleEnviarCRM}
@@ -365,7 +365,7 @@ function ThreadCard({ thread, archivedView }: { thread: InboxThread; archivedVie
               {sendingToCRM ? (
                 <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
               ) : isDerived ? (
-                <CheckCircle2 className="mr-1.5 h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
+                <CheckCircle2 className="mr-1.5 h-3.5 w-3.5 text-emerald-600" />
               ) : (
                 <UserCheck className="mr-1.5 h-3.5 w-3.5" />
               )}

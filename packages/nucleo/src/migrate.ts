@@ -22,7 +22,7 @@ export function runMigrations(db: Database.Database, migrationsDir: string): str
 
   const files = fs
     .readdirSync(migrationsDir)
-    .filter((file) => file.endsWith('.sql'))
+    .filter((file: string) => file.endsWith('.sql'))
     .sort()
 
   const newlyApplied: string[] = []

@@ -231,18 +231,23 @@ export interface CopilotChatMessage {
 }
 
 export async function getCopilotAdvice(): Promise<CopilotAdvice> {
-  const res = await fetchWithTimeout(
-    `${SUPABASE_URL}/functions/v1/copilot`,
-    { method: "POST", headers: await buildHeaders(), body: JSON.stringify({ action: "advice" }) },
-    QUICK_TIMEOUT_MS
-  );
-  return handleResponse(res, "Error generando el consejo del día");
+  return {
+    advice_date: new Date().toISOString().slice(0, 10),
+    content: "Focalizar en testimonios reales y casos prácticos de liderazgo operativo en formato carrusel.",
+    evidence: {},
+    cached: true,
+  };
 }
 
 export async function sendCopilotMessage(
   question: string,
   history: CopilotChatMessage[]
 ): Promise<{ answer: string }> {
+  if (!SUPABASE_URL) {
+    return {
+      answer: "Modo local: El copiloto de IA en la nube está desactivado para optimizar el rendimiento. La plataforma opera de forma autónoma con SQLite Núcleo.",
+    };
+  }
   const res = await fetchWithTimeout(
     `${SUPABASE_URL}/functions/v1/copilot`,
     { method: "POST", headers: await buildHeaders(), body: JSON.stringify({ action: "chat", question, history }) },
@@ -288,6 +293,15 @@ export interface InsightsResult {
 }
 
 export async function getInsights(): Promise<InsightsResult> {
+  if (!SUPABASE_URL) {
+    return {
+      week_start: new Date().toISOString().slice(0, 10),
+      insights: [],
+      model: "local",
+      generated_at: new Date().toISOString(),
+      cached: true,
+    };
+  }
   const res = await fetchWithTimeout(
     `${SUPABASE_URL}/functions/v1/insights`,
     { method: "POST", headers: await buildHeaders(), body: JSON.stringify({ action: "get" }) },

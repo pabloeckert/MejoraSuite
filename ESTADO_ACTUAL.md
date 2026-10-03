@@ -106,7 +106,30 @@ Se resolvió la fricción operativa de terminales y el arranque en frío del mot
 
 ---
 
-## 6. Próximo Paso (Fase 4)
+## 6. Hito Alcanzado: Hard Reset, Desbloqueo Visual y Blindaje E2E (Completada)
+
+Se ejecutó un rescate integral del entorno de desarrollo y la experiencia de usuario:
+
+1. **Neutralización de Telemetría y Fondo Institucional Blanco:**
+   - Erradicación de bucles de red y fallos CORS en `telemetryService.ts`.
+   - Normalización de la interfaz general a fondo blanco institucional (`bg-white`), eliminando contrastes oscuros residuales en `App.tsx`, `Header.tsx`, `LauncherMatrix.tsx` y `TelemetryBar.tsx`.
+2. **Desbloqueo de Social Media y Nueva Mesa Ejecutiva (`MesaEjecutivaLimpia.tsx`):**
+   - Eliminación del bloqueo del hilo principal de React en el Dashboard originado por fetching automático no condicionado.
+   - Redirección forzada de la ruta `/` y `/dashboard` hacia `/mesa`.
+   - Implementación de la **Mesa Ejecutiva Limpia**, con área amplia de redacción de prompts, selector de formatos (carruseles, posts de trinchera, stories reflexivas), generador de contenido asistido por IA y persistencia en SQLite (`sm_propuestas`).
+3. **Corrección de Tipado y Adaptadores Soberanos:**
+   - Resolución de errores de sobrecarga y tipos `never` en `AuthContext.tsx` (`@mejora/crm`).
+   - Declaración y exportación autónoma de tipos soberanos (`SmPropuestaRecord`, `SmCanalRecord`, `SmMetricaRecord`) en `nucleoAdapter.ts` (`@mejora/sm`), evitando fallas de resolución en el servidor de lenguaje del IDE.
+   - Tipado y retorno compatible de `checkTimeoutPropuestasInSqlite()`.
+4. **Batería de Pruebas E2E Reales (`scripts/test-e2e-real.mjs`):**
+   - Validación automatizada de **40/40 pruebas reales** ejecutadas en el runtime nativo de Electron.
+   - Verificación de HTTP 200 en el servidor Vite local (`http://127.0.0.1:5170`), integridad de las 19 tablas SQLite, inserción y consulta transaccional de propuestas y coherencia de esquemas CRM/Contactos.
+   - Compilación completa del monorepo (`turbo run build`): **5/5 paquetes en verde**.
+
+---
+
+## 7. Próximo Paso (Fase 4)
 
 - **Distribución y Empaquetado:** Configurar `electron-builder` en `@mejora/shell` para generar el instalador final NSIS y versión portable para Windows 11.
+
 

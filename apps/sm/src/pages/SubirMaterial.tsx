@@ -634,7 +634,7 @@ export default function SubirMaterial() {
                     </span>
                   )}
                   {instantSuggestedDim && (
-                    <span className="text-[11px] text-emerald-600 dark:text-emerald-400 font-medium flex items-center gap-1 mt-1">
+                    <span className="text-[11px] text-emerald-600 font-medium flex items-center gap-1 mt-1">
                       <Sparkles className="h-3 w-3" /> Sugerido por IA: {KICKER(instantSuggestedDim)}
                     </span>
                   )}

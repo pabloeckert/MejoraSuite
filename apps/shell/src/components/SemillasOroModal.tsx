@@ -172,38 +172,38 @@ export const SemillasOroModal: React.FC<SemillasOroModalProps> = ({
   const conversionRate = current.alcance > 0 ? ((current.clics / current.alcance) * 100).toFixed(2) : '0.00';
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-fadeIn">
-      <div className="bg-slate-900 border border-mc-amarillo/30 rounded-2xl w-full max-w-4xl max-h-[92vh] flex flex-col shadow-2xl overflow-hidden text-slate-100 font-modelica">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fadeIn">
+      <div className="bg-white border border-slate-200 rounded-2xl w-full max-w-4xl max-h-[92vh] flex flex-col shadow-2xl overflow-hidden text-slate-900 font-modelica">
         {/* Modal Header */}
-        <div className="px-6 py-4 border-b border-white/10 flex items-center justify-between bg-mc-azul-dark/60">
+        <div className="px-6 py-4 border-b border-slate-200 flex items-center justify-between bg-slate-50">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-mc-amarillo/10 border border-mc-amarillo/30 flex items-center justify-center text-mc-amarillo shadow-inner">
+            <div className="w-10 h-10 rounded-xl bg-amber-50 border border-amber-300 flex items-center justify-center text-amber-600 shadow-inner">
               <Award className="w-5 h-5" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h2 className="text-lg font-extrabold text-white font-spartan uppercase tracking-wide">
+                <h2 className="text-lg font-extrabold text-slate-900 font-spartan uppercase tracking-wide">
                   Semillas de Oro · Cold Start
                 </h2>
-                <span className="px-2 py-0.5 rounded-full bg-mc-amarillo/20 text-mc-amarillo text-[10px] font-bold font-mono">
+                <span className="px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 text-[10px] font-bold font-mono">
                   ADN Ganador B2B
                 </span>
               </div>
-              <p className="text-xs text-slate-400">
+              <p className="text-xs text-slate-500">
                 Los 3 posts históricos con mayor conversión que alimentan el criterio estratégico de Gemini 1.5 Pro.
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-2 rounded-lg text-slate-400 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
+            className="p-2 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Tab Selector */}
-        <div className="px-6 pt-3 pb-2 border-b border-white/10 bg-slate-950 flex items-center justify-between flex-wrap gap-2">
+        <div className="px-6 pt-3 pb-2 border-b border-slate-200 bg-slate-50 flex items-center justify-between flex-wrap gap-2">
           <div className="flex items-center gap-2">
             {semillas.map((s, idx) => (
               <button
@@ -211,8 +211,8 @@ export const SemillasOroModal: React.FC<SemillasOroModalProps> = ({
                 onClick={() => setActiveTab(idx)}
                 className={`px-3 py-1.5 rounded-lg text-xs font-spartan font-bold uppercase tracking-wider transition-all cursor-pointer flex items-center gap-1.5 ${
                   activeTab === idx
-                    ? 'bg-mc-amarillo text-mc-slate shadow-sm'
-                    : 'bg-white/5 text-slate-300 hover:bg-white/10 hover:text-white'
+                    ? 'bg-mc-azul text-white shadow-sm'
+                    : 'bg-slate-200/70 text-slate-700 hover:bg-slate-200 hover:text-slate-900'
                 }`}
               >
                 <span>Semilla #{idx + 1}</span>
@@ -223,8 +223,8 @@ export const SemillasOroModal: React.FC<SemillasOroModalProps> = ({
             ))}
           </div>
 
-          <div className="flex items-center gap-2 text-xs text-slate-400">
-            <span className="inline-flex items-center gap-1 text-emerald-400">
+          <div className="flex items-center gap-2 text-xs text-slate-500">
+            <span className="inline-flex items-center gap-1 text-emerald-600 font-medium">
               <CheckCircle2 className="w-3.5 h-3.5" />
               Persistencia SQLite Local
             </span>
@@ -235,8 +235,8 @@ export const SemillasOroModal: React.FC<SemillasOroModalProps> = ({
         {statusMessage && (
           <div className={`mx-6 mt-4 p-3 rounded-lg flex items-center gap-2 text-xs font-medium ${
             statusMessage.type === 'success'
-              ? 'bg-emerald-500/15 border border-emerald-500/30 text-emerald-300'
-              : 'bg-rose-500/15 border border-rose-500/30 text-rose-300'
+              ? 'bg-emerald-50 border border-emerald-200 text-emerald-800'
+              : 'bg-rose-50 border border-rose-200 text-rose-800'
           }`}>
             {statusMessage.type === 'success' ? (
               <CheckCircle2 className="w-4 h-4 shrink-0" />
@@ -250,39 +250,39 @@ export const SemillasOroModal: React.FC<SemillasOroModalProps> = ({
         {/* Form Body */}
         <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4">
           {/* Post Metrics Header */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 p-3 rounded-xl bg-mc-azul-surface/40 border border-white/5">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 p-3 rounded-xl bg-slate-50 border border-slate-200">
             <div>
-              <label className="text-[10px] uppercase font-bold text-slate-400">Alcance (Impresiones)</label>
+              <label className="text-[10px] uppercase font-bold text-slate-500">Alcance (Impresiones)</label>
               <input
                 type="number"
                 value={current.alcance}
                 onChange={(e) => updateCurrentField('alcance', Number(e.target.value))}
-                className="w-full mt-1 bg-slate-900 border border-white/10 rounded-lg px-2.5 py-1.5 text-xs text-white focus:border-mc-amarillo outline-none"
+                className="w-full mt-1 bg-white border border-slate-300 rounded-lg px-2.5 py-1.5 text-xs text-slate-900 focus:border-mc-azul outline-none"
               />
             </div>
             <div>
-              <label className="text-[10px] uppercase font-bold text-slate-400">Clics (Conversión)</label>
+              <label className="text-[10px] uppercase font-bold text-slate-500">Clics (Conversión)</label>
               <input
                 type="number"
                 value={current.clics}
                 onChange={(e) => updateCurrentField('clics', Number(e.target.value))}
-                className="w-full mt-1 bg-slate-900 border border-white/10 rounded-lg px-2.5 py-1.5 text-xs text-emerald-400 font-bold focus:border-mc-amarillo outline-none"
+                className="w-full mt-1 bg-white border border-slate-300 rounded-lg px-2.5 py-1.5 text-xs text-emerald-600 font-bold focus:border-mc-azul outline-none"
               />
             </div>
             <div>
-              <label className="text-[10px] uppercase font-bold text-slate-400">Interacciones</label>
+              <label className="text-[10px] uppercase font-bold text-slate-500">Interacciones</label>
               <input
                 type="number"
                 value={current.interacciones}
                 onChange={(e) => updateCurrentField('interacciones', Number(e.target.value))}
-                className="w-full mt-1 bg-slate-900 border border-white/10 rounded-lg px-2.5 py-1.5 text-xs text-white focus:border-mc-amarillo outline-none"
+                className="w-full mt-1 bg-white border border-slate-300 rounded-lg px-2.5 py-1.5 text-xs text-slate-900 focus:border-mc-azul outline-none"
               />
             </div>
-            <div className="flex flex-col justify-center items-center rounded-lg bg-mc-amarillo/10 border border-mc-amarillo/20 p-1">
-              <span className="text-[10px] uppercase font-bold text-mc-amarillo flex items-center gap-1">
+            <div className="flex flex-col justify-center items-center rounded-lg bg-amber-50 border border-amber-200 p-1">
+              <span className="text-[10px] uppercase font-bold text-amber-800 flex items-center gap-1">
                 <TrendingUp className="w-3 h-3" /> Tasa Conversión
               </span>
-              <span className="text-lg font-extrabold text-mc-amarillo font-mono mt-0.5">
+              <span className="text-lg font-extrabold text-amber-800 font-mono mt-0.5">
                 {conversionRate}%
               </span>
             </div>
@@ -290,79 +290,79 @@ export const SemillasOroModal: React.FC<SemillasOroModalProps> = ({
 
           {/* Título */}
           <div>
-            <label className="block text-xs font-spartan font-bold uppercase text-slate-300 mb-1">
+            <label className="block text-xs font-spartan font-bold uppercase text-slate-700 mb-1">
               Título del Post Ganador
             </label>
             <input
               type="text"
               value={current.titulo}
               onChange={(e) => updateCurrentField('titulo', e.target.value)}
-              className="w-full bg-slate-950 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:border-mc-amarillo outline-none transition-colors"
+              className="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-sm text-slate-900 focus:border-mc-azul outline-none transition-colors"
               placeholder="Ej: No vendés poco. Vendés a ciegas."
             />
           </div>
 
           {/* Gancho (Hook) */}
           <div>
-            <label className="block text-xs font-spartan font-bold uppercase text-slate-300 mb-1">
+            <label className="block text-xs font-spartan font-bold uppercase text-slate-700 mb-1">
               Gancho (Hook) · Dolor del Líder sin Juzgar
             </label>
             <input
               type="text"
               value={current.hook}
               onChange={(e) => updateCurrentField('hook', e.target.value)}
-              className="w-full bg-slate-950 border border-white/10 rounded-lg px-3 py-2 text-xs text-slate-200 focus:border-mc-amarillo outline-none transition-colors"
+              className="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-xs text-slate-900 focus:border-mc-azul outline-none transition-colors"
               placeholder="Gancho de apertura contundente..."
             />
           </div>
 
           {/* Cuerpo (Body) */}
           <div>
-            <label className="block text-xs font-spartan font-bold uppercase text-slate-300 mb-1">
+            <label className="block text-xs font-spartan font-bold uppercase text-slate-700 mb-1">
               Cuerpo (Lógica y Profesionalización)
             </label>
             <textarea
               rows={4}
               value={current.body}
               onChange={(e) => updateCurrentField('body', e.target.value)}
-              className="w-full bg-slate-950 border border-white/10 rounded-lg p-3 text-xs text-slate-200 focus:border-mc-amarillo outline-none transition-colors leading-relaxed font-sans"
+              className="w-full bg-slate-50 border border-slate-300 rounded-lg p-3 text-xs text-slate-900 focus:border-mc-azul outline-none transition-colors leading-relaxed font-sans"
               placeholder="Desarrollo del post con foco en causa raíz y estructura..."
             />
           </div>
 
           {/* Llamado a la Acción (CTA) */}
           <div>
-            <label className="block text-xs font-spartan font-bold uppercase text-slate-300 mb-1">
+            <label className="block text-xs font-spartan font-bold uppercase text-slate-700 mb-1">
               Cierre / CTA Mind-Reader (Alivio y Autoridad)
             </label>
             <input
               type="text"
               value={current.cta}
               onChange={(e) => updateCurrentField('cta', e.target.value)}
-              className="w-full bg-slate-950 border border-white/10 rounded-lg px-3 py-2 text-xs text-mc-amarillo font-medium focus:border-mc-amarillo outline-none transition-colors"
+              className="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-xs text-mc-azul font-semibold focus:border-mc-azul outline-none transition-colors"
               placeholder="Ej: Si tu estructura hoy es un cuello de botella, ya sabés dónde encontrarme."
             />
           </div>
         </div>
 
         {/* Modal Footer */}
-        <div className="px-6 py-3.5 border-t border-white/10 bg-slate-950/80 flex items-center justify-between flex-wrap gap-3">
-          <div className="flex items-center gap-2 text-xs text-slate-400">
-            <FileCode className="w-3.5 h-3.5 text-mc-amarillo" />
-            <span>Archivo SQL editable: <code className="text-mc-amarillo font-mono">c:\github\semillas_oro.sql</code></span>
+        <div className="px-6 py-3.5 border-t border-slate-200 bg-slate-50 flex items-center justify-between flex-wrap gap-3">
+          <div className="flex items-center gap-2 text-xs text-slate-500">
+            <FileCode className="w-3.5 h-3.5 text-mc-azul" />
+            <span>Archivo SQL editable: <code className="text-mc-azul font-mono">c:\github\semillas_oro.sql</code></span>
           </div>
 
           <div className="flex items-center gap-3">
             <button
               onClick={handleResetDefaults}
-              className="px-3 py-2 rounded-lg bg-white/5 hover:bg-white/10 text-xs font-medium text-slate-300 transition-colors cursor-pointer"
+              className="px-3 py-2 rounded-lg bg-slate-200/80 hover:bg-slate-200 text-xs font-medium text-slate-700 transition-colors cursor-pointer"
             >
               Restaurar Predeterminados
             </button>
             <button
               onClick={handleSaveToSqlite}
               disabled={saving}
-              className="px-4 py-2 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-xs font-spartan font-bold uppercase tracking-wider flex items-center gap-2 transition-all cursor-pointer disabled:opacity-50 shadow-md shadow-emerald-500/20"
+              className="px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-spartan font-bold uppercase tracking-wider flex items-center gap-2 transition-all cursor-pointer disabled:opacity-50 shadow-sm"
             >
               {saving ? (
                 <>

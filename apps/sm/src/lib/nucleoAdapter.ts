@@ -1,4 +1,44 @@
-import type { SmPropuestaRecord, SmCanalRecord, SmMetricaRecord } from '@mejora/nucleo';
+export type SmPropuestaEstado =
+  | 'borrador'
+  | 'pendiente_revision'
+  | 'aprobado'
+  | 'programado'
+  | 'congelado_por_timeout'
+  | 'publicado'
+  | 'error_sincronizacion'
+  | 'rechazado';
+
+export interface SmPropuestaRecord {
+  id: number;
+  titulo: string;
+  contenido: string;
+  formato?: string | null;
+  estado: SmPropuestaEstado;
+  canal_id?: number | null;
+  hash_unico?: string | null;
+  programado_el?: string | null;
+  publicado_el?: string | null;
+  creado_el?: string;
+  actualizado_el?: string;
+}
+
+export interface SmCanalRecord {
+  id: number;
+  plataforma: string;
+  activo: number;
+  cuenta_id?: string | null;
+  creado_el?: string;
+}
+
+export interface SmMetricaRecord {
+  id: number;
+  propuesta_id: number;
+  alcance: number;
+  interacciones: number;
+  clics: number;
+  compartidos: number;
+  registrado_el?: string;
+}
 
 export function isElectronLocal(): boolean {
   return typeof window !== 'undefined' && Boolean((window as any).suite?.db?.sm);
@@ -73,15 +113,29 @@ export async function forceZernioSyncInSqlite(): Promise<{
   return { success: false, error: 'IPC suite.db.sm.forceZernioSync no disponible' };
 }
 
-export async function checkTimeoutPropuestasInSqlite(): Promise<{ affectedCount: number; affectedIds: number[] }> {
+export async function checkTimeoutPropuestasInSqlite(): Promise<{
+  affectedCount: number;
+  affectedIds: number[];
+  congeladas: number;
+  detalles: string[];
+}> {
   if (typeof window !== 'undefined' && (window as any).suite?.db?.sm?.checkTimeoutPropuestas) {
     try {
-      return await (window as any).suite.db.sm.checkTimeoutPropuestas();
+      const res = await (window as any).suite.db.sm.checkTimeoutPropuestas();
+      const count = res?.congeladas ?? res?.affectedCount ?? 0;
+      const ids: number[] = res?.affectedIds ?? [];
+      const detalles: string[] = res?.detalles ?? ids.map((id: number) => `Propuesta #${id}`);
+      return {
+        affectedCount: count,
+        affectedIds: ids,
+        congeladas: count,
+        detalles,
+      };
     } catch (err) {
       console.error('[SM NucleoAdapter] Error al ejecutar chequeo de timeouts:', err);
     }
   }
-  return { affectedCount: 0, affectedIds: [] };
+  return { affectedCount: 0, affectedIds: [], congeladas: 0, detalles: [] };
 }
 
 export async function verificarHashPropuestaInSqlite(
@@ -101,9 +155,9 @@ export async function generateAiCyborgContent(
   prompt: string,
   contexto_historico?: string
 ): Promise<{ success: boolean; text?: string; error?: string }> {
-  if (typeof window !== 'undefined' && window.suite?.ai?.generate) {
+  if (typeof window !== 'undefined' && (window as any).suite?.ai?.generate) {
     try {
-      return await window.suite.ai.generate(prompt, contexto_historico);
+      return await (window as any).suite.ai.generate(prompt, contexto_historico);
     } catch (err: any) {
       console.error('[SM NucleoAdapter] Error al invocar Gemini AI:', err);
       return { success: false, error: err.message };

@@ -16,6 +16,7 @@ import { AuthGate } from "@/components/AuthGate";
 const Dashboard = lazy(() => import("./pages/Dashboard"));
 const Boveda = lazy(() => import("./pages/Boveda"));
 const MesaDialogo = lazy(() => import("./pages/MesaDialogo"));
+const MesaEjecutivaLimpia = lazy(() => import("./pages/MesaEjecutivaLimpia"));
 const Configuracion = lazy(() => import("./pages/Configuracion"));
 const Calendario = lazy(() => import("./pages/Calendario"));
 const Propuestas = lazy(() => import("./pages/Propuestas"));
@@ -59,9 +60,11 @@ const App = () => (
             <Suspense fallback={<RouteFallback />}>
               <Routes>
                 <Route element={<AppLayout />}>
-                  <Route path="/" element={<Dashboard />} />
+                  {/* Bypass temporal de Dashboard: redireccion forzada a Mesa Ejecutiva */}
+                  <Route path="/" element={<Navigate to="/mesa" replace />} />
+                  <Route path="/dashboard" element={<Navigate to="/mesa" replace />} />
                   <Route path="/boveda" element={<Boveda />} />
-                  <Route path="/mesa" element={<MesaDialogo />} />
+                  <Route path="/mesa" element={<MesaEjecutivaLimpia />} />
                   {/* Fase B (2026-08-31): Laboratorio se fusionó con Mesa de Diálogo (brief 2026-08-16). */}
                   <Route path="/laboratorio" element={<Navigate to="/mesa" replace />} />
                   <Route path="/configuracion" element={<Configuracion />} />

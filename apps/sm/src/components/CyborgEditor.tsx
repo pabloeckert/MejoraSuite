@@ -246,7 +246,7 @@ export function CyborgEditor({ open, onOpenChange, onSuccess }: CyborgEditorProp
           {/* COLUMNA IZQUIERDA: INPUT Y OUTPUT DE IA */}
           <div className="flex flex-col space-y-4 rounded-xl border border-border bg-muted/20 p-4">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold uppercase tracking-wider text-indigo-600 dark:text-indigo-400 flex items-center gap-1.5">
+              <span className="text-xs font-semibold uppercase tracking-wider text-indigo-600 flex items-center gap-1.5">
                 <Sparkles className="h-3.5 w-3.5" />
                 Motor Estratégico (Gemini)
               </span>
@@ -329,7 +329,7 @@ export function CyborgEditor({ open, onOpenChange, onSuccess }: CyborgEditorProp
           {/* COLUMNA DERECHA: QUIRÓFANO HUMANO */}
           <div className="flex flex-col space-y-4 rounded-xl border border-border bg-card p-4">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold uppercase tracking-wider text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5">
+              <span className="text-xs font-semibold uppercase tracking-wider text-emerald-600 flex items-center gap-1.5">
                 <FileEdit className="h-3.5 w-3.5" />
                 Quirófano Humano
               </span>

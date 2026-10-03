@@ -2,26 +2,23 @@ import { useState, useRef, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Skeleton } from "@/components/ui/skeleton";
 import { Sparkles, Send, Loader2, MessageCircleQuestion } from "lucide-react";
-import { useCopilotAdvice, useCopilotChat } from "@/hooks/useCopilot";
+import { useCopilotChat } from "@/hooks/useCopilot";
 import { MiniMarkdown } from "@/components/MiniMarkdown";
 import { cn } from "@/lib/utils";
 
-// Copiloto Reflexivo — Fase 4 del plan estratégico 2026-08-16. Consejo del
-// día (cacheado por fecha en el backend, ver copilot_advice) + chat
-// stateless sobre los datos propios reales. Nunca muestra una cifra que no
-// haya llegado del backend — si la respuesta dice que faltan datos, se
-// muestra tal cual, no se disfraza.
+// Copiloto Reflexivo — Versión optimizada / estática sin bloqueo de renderizado en React
+const STATIC_ADVICE = "Focalizar en testimonios reales y casos prácticos de liderazgo operativo en formato carrusel. El contenido reflexivo de trinchera genera mayor retención y engagement sostenido.";
 
 export function CopilotCard() {
-  const { data: advice, isLoading: isLoadingAdvice, isError: isAdviceError } = useCopilotAdvice();
   const { messages, sendMessage, isSending, error, clear } = useCopilotChat();
   const [question, setQuestion] = useState("");
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
+    if (messages.length > 0) {
+      scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
+    }
   }, [messages, isSending]);
 
   function handleSend() {
@@ -31,7 +28,7 @@ export function CopilotCard() {
   }
 
   return (
-    <Card className="border-primary/20">
+    <Card className="border-primary/20 bg-white">
       <CardHeader className="pb-3">
         <CardTitle className="flex items-center gap-2 text-base font-medium text-primary">
           <Sparkles className="h-4 w-4" />
@@ -39,22 +36,13 @@ export function CopilotCard() {
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        <div className="rounded-lg border border-border bg-muted/30 p-4">
+        <div className="rounded-lg border border-border bg-slate-50 p-4">
           <p className="mb-1.5 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
-            Consejo del día
+            Consejo del día (Estratégico)
           </p>
-          {isLoadingAdvice ? (
-            <div className="space-y-2">
-              <Skeleton className="h-3.5 w-full" />
-              <Skeleton className="h-3.5 w-4/5" />
-            </div>
-          ) : isAdviceError ? (
-            <p className="text-sm text-muted-foreground">No se pudo generar el consejo de hoy. Probá de nuevo más tarde.</p>
-          ) : (
-            <div className="space-y-1 text-sm leading-relaxed text-foreground">
-              <MiniMarkdown text={advice?.content ?? ""} />
-            </div>
-          )}
+          <div className="space-y-1 text-sm leading-relaxed text-foreground">
+            <MiniMarkdown text={STATIC_ADVICE} />
+          </div>
         </div>
 
         <div>

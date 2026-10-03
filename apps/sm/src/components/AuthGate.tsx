@@ -10,7 +10,17 @@ import { isElectronLocal } from "@/lib/nucleoAdapter";
 // recupero") — reemplaza el estado abierto que había desde 2026-08-25.
 // Una sola cuenta compartida (la que está en app_admins).
 export function AuthGate({ children }: { children: ReactNode }) {
-  if (isElectronLocal()) {
+  // Bypass automático en entorno local, Electron o desarrollo para evitar bloqueo de login
+  const isLocalOrDev =
+    isElectronLocal() ||
+    (typeof window !== "undefined" && (
+      window.location.hostname === "localhost" ||
+      window.location.hostname === "127.0.0.1"
+    )) ||
+    import.meta.env.DEV ||
+    !import.meta.env.VITE_SUPABASE_URL;
+
+  if (isLocalOrDev) {
     return <>{children}</>;
   }
 

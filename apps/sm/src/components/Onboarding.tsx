@@ -119,7 +119,7 @@ export function Onboarding() {
           </ul>
           {documents && documents.length > 0 && (
             <div className="rounded-lg border border-green-500/30 bg-green-500/5 p-3">
-              <p className="text-sm text-green-600 dark:text-green-400">
+              <p className="text-sm text-green-600">
                 ✅ Ya tenés {documents.length} documento{documents.length > 1 ? "s" : ""} en la bóveda.
               </p>
             </div>

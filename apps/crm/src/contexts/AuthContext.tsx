@@ -98,21 +98,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   /* ── Real Supabase auth (solo cuando el modo demo está apagado) ── */
   const fetchUserData = async (userId: string) => {
     const [roleRes, profileRes] = await Promise.all([
-      supabase.rpc("get_user_role", { _user_id: userId }),
-      supabase.from("profiles").select("full_name, avatar_url, organization_id").eq("user_id", userId).single(),
+      (supabase as any).rpc("get_user_role", { _user_id: userId }),
+      (supabase as any).from("profiles").select("full_name, avatar_url").eq("user_id", userId).maybeSingle(),
     ]);
-    if (roleRes.data) setRole(roleRes.data);
-    if (profileRes.data) {
-      setProfile({ full_name: profileRes.data.full_name, avatar_url: profileRes.data.avatar_url });
-      setOrganizationId(profileRes.data.organization_id ?? null);
+    if ((roleRes as any)?.data) setRole((roleRes as any).data);
+    if ((profileRes as any)?.data) {
+      setProfile({ full_name: (profileRes as any).data.full_name, avatar_url: (profileRes as any).data.avatar_url });
+      setOrganizationId(((profileRes as any).data as any)?.organization_id ?? DEMO_ORG_ID);
     }
   };
 
   useEffect(() => {
     if (demoMode) return;
 
-    // Bypass hacia entorno local Electron con SQLite
-    if (typeof window !== "undefined" && Boolean((window as any).suite?.db)) {
+    // Bypass hacia entorno local (Electron con SQLite o navegador en localhost/desarrollo)
+    const isLocalOrDev =
+      typeof window !== "undefined" && (
+        Boolean((window as any).suite?.db) ||
+        window.location.hostname === "localhost" ||
+        window.location.hostname === "127.0.0.1" ||
+        import.meta.env.DEV
+      );
+
+    if (isLocalOrDev) {
       const localUser = makeDemoUser("suite-local-admin", "admin@mejora.local");
       setUser(localUser);
       setSession(makeDemoSession(localUser));

@@ -60,7 +60,10 @@ body {
 }
 
 .logo {
-  height: 32px;
+  height: 48px;
+  width: auto;
+  max-width: 260px;
+  object-fit: contain;
 }
 
 .demo-toggle {

@@ -124,7 +124,7 @@ function CandidateRow({ candidate }: { candidate: RecycleCandidate }) {
             </span>
           )}
           {candidate.engagement != null && candidate.engagement > 0 && (
-            <Badge className={candidate.aboveMedian ? "border-0 bg-green-100 text-green-800 dark:bg-green-950 dark:text-green-200" : "border-0 bg-muted text-muted-foreground"}>
+            <Badge className={candidate.aboveMedian ? "border-0 bg-green-100 text-green-800" : "border-0 bg-muted text-muted-foreground"}>
               {candidate.engagement.toFixed(1)}% engagement
             </Badge>
           )}

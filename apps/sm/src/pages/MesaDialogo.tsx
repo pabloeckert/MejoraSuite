@@ -656,9 +656,9 @@ function SessionCard({
           {/* AVISO DE ESTADO EN VIVO O TIMEOUT */}
           {session.status === "active" && (
             isStale ? (
-              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-3.5 rounded-xl border border-amber-500/30 bg-amber-500/10 text-amber-900 dark:text-amber-200 text-xs">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-3.5 rounded-xl border border-amber-500/30 bg-amber-500/10 text-amber-900 text-xs">
                 <div className="flex items-start gap-2.5">
-                  <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5 text-amber-600 dark:text-amber-400" />
+                  <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5 text-amber-600" />
                   <div>
                     <p className="font-semibold">El debate está tardando más de 90 segundos.</p>
                     <p className="text-muted-foreground mt-0.5">
@@ -670,7 +670,7 @@ function SessionCard({
                   <Button
                     size="sm"
                     variant="outline"
-                    className="shrink-0 h-8 gap-1.5 border-amber-500/40 text-amber-800 dark:text-amber-200 hover:bg-amber-500/20 font-medium"
+                    className="shrink-0 h-8 gap-1.5 border-amber-500/40 text-amber-800 hover:bg-amber-500/20 font-medium"
                     disabled={isRetrying}
                     onClick={(e) => {
                       e.stopPropagation();
