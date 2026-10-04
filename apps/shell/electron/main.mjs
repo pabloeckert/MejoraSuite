@@ -218,9 +218,19 @@ function createWindow() {
       preload: path.join(__dirname, 'preload.cjs'),
       contextIsolation: true,
       nodeIntegration: false,
+      sandbox: true,
+      webSecurity: true,
     },
   })
   mainWindow.setMenuBarVisibility(false)
+
+  // Zero-trust de navegación y permisos: la ventana solo muestra el bundle local o el dev server.
+  mainWindow.webContents.setWindowOpenHandler(() => ({ action: 'deny' }))
+  mainWindow.webContents.on('will-navigate', (event, url) => {
+    const isLocal = url.startsWith('file://') || url.startsWith('http://localhost:5170')
+    if (!isLocal) event.preventDefault()
+  })
+  mainWindow.webContents.session.setPermissionRequestHandler((_wc, _permission, callback) => callback(false))
 
   mainWindow.webContents.on('console-message', (_event, level, message, line, sourceId) => {
     console.log(`[Renderer] [level=${level}] ${message} (${sourceId}:${line})`)
@@ -372,7 +382,12 @@ function registerIpcHandlers() {
   })
 
   ipcMain.handle('suite:db:query', (_e, sql, params) => {
-    return querySql(sql, params)
+    // Solo lectura: una única sentencia SELECT, sin ';' intermedios ni PRAGMA/ATTACH.
+    const text = typeof sql === 'string' ? sql.trim().replace(/;\s*$/, '') : ''
+    if (!/^select\s/i.test(text) || text.includes(';') || /\b(attach|pragma|load_extension)\b/i.test(text)) {
+      throw new Error('suite:db:query solo admite una sentencia SELECT de lectura')
+    }
+    return querySql(text, Array.isArray(params) ? params : [])
   })
 
   // ==========================================
