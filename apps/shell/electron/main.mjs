@@ -11,7 +11,7 @@ import { app, BrowserWindow, ipcMain, shell } from 'electron'
 import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { assertReadOnlySelect } from './sql-guard.mjs'
+import { assertReadOnlySelect, assertIpcSender } from './sql-guard.mjs'
 import {
   connectDatabase,
   getDatabase,
@@ -98,7 +98,7 @@ if (fs.existsSync(envPath)) {
 }
 
 const CONTACTOS_API_URL = process.env.CONTACTOS_API_URL || 'https://tzatuvxatsduuslxqdtm.supabase.co/functions/v1/contactos-api'
-const CONTACTOS_API_KEY = process.env.CONTACTOS_API_KEY || '270fa9a7c24cf33908cdd2f5cf468760fd490d93049964c717d9a6433d8d3539'
+const CONTACTOS_API_KEY = process.env.CONTACTOS_API_KEY || ''
 
 app.disableHardwareAcceleration()
 
@@ -382,8 +382,8 @@ function registerIpcHandlers() {
     return getNegocios()
   })
 
-  ipcMain.handle('suite:db:query', (_e, sql, params) => {
-    // Solo lectura: ver sql-guard.mjs
+  ipcMain.handle('suite:db:query', (event, sql, params) => {
+    assertIpcSender(event)
     return querySql(assertReadOnlySelect(sql), Array.isArray(params) ? params : [])
   })
 

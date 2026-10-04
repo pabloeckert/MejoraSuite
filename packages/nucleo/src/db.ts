@@ -76,6 +76,7 @@ export function connectDatabase(customDbPath?: string, customMigrationsDir?: str
 
   db = new Database(currentDbPath)
   db.pragma('journal_mode = WAL')
+  db.pragma('synchronous = NORMAL')
   db.pragma('foreign_keys = ON')
 
   const migrationsDir = customMigrationsDir || resolveDefaultMigrationsDir()

@@ -10,3 +10,12 @@ export function assertReadOnlySelect(sql) {
   }
   return text
 }
+
+export function assertIpcSender(event) {
+  if (!event || !event.senderFrame) return true
+  const url = event.senderFrame.url || ''
+  if (!url.startsWith('file://') && !url.startsWith('http://localhost:5170')) {
+    throw new Error('Canal IPC no autorizado: origen desconocido')
+  }
+  return true
+}

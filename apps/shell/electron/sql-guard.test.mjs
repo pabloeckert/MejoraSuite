@@ -1,6 +1,6 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { assertReadOnlySelect } from './sql-guard.mjs'
+import { assertReadOnlySelect, assertIpcSender } from './sql-guard.mjs'
 
 test('acepta un SELECT simple y quita el ; final', () => {
   assert.equal(assertReadOnlySelect('  SELECT * FROM clientes WHERE id = ?; '), 'SELECT * FROM clientes WHERE id = ?')
@@ -25,4 +25,11 @@ test('rechaza entradas que no son texto', () => {
   for (const q of [undefined, null, 42, {}, ['SELECT 1']]) {
     assert.throws(() => assertReadOnlySelect(q), /solo admite/)
   }
+})
+
+test('valida correctamente senderFrame seguro de Electron', () => {
+  assert.equal(assertIpcSender({ senderFrame: { url: 'file:///path/to/dist/index.html' } }), true)
+  assert.equal(assertIpcSender({ senderFrame: { url: 'http://localhost:5170/app' } }), true)
+  assert.equal(assertIpcSender({}), true)
+  assert.throws(() => assertIpcSender({ senderFrame: { url: 'https://malicious.site.com' } }), /Canal IPC no autorizado/)
 })
