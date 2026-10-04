@@ -11,6 +11,7 @@ import { app, BrowserWindow, ipcMain, shell } from 'electron'
 import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { assertReadOnlySelect } from './sql-guard.mjs'
 import {
   connectDatabase,
   getDatabase,
@@ -382,12 +383,8 @@ function registerIpcHandlers() {
   })
 
   ipcMain.handle('suite:db:query', (_e, sql, params) => {
-    // Solo lectura: una única sentencia SELECT, sin ';' intermedios ni PRAGMA/ATTACH.
-    const text = typeof sql === 'string' ? sql.trim().replace(/;\s*$/, '') : ''
-    if (!/^select\s/i.test(text) || text.includes(';') || /\b(attach|pragma|load_extension)\b/i.test(text)) {
-      throw new Error('suite:db:query solo admite una sentencia SELECT de lectura')
-    }
-    return querySql(text, Array.isArray(params) ? params : [])
+    // Solo lectura: ver sql-guard.mjs
+    return querySql(assertReadOnlySelect(sql), Array.isArray(params) ? params : [])
   })
 
   // ==========================================

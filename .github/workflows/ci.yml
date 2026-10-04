@@ -30,6 +30,7 @@ jobs:
       - run: npx tsc --noEmit -p apps/sm/tsconfig.json
       - run: npm run build
       - run: npm test --workspaces --if-present
+      - run: node --test apps/shell/electron/sql-guard.test.mjs
 
   secrets:
     runs-on: ubuntu-latest
