@@ -226,10 +226,17 @@ export async function handleSend(telefono, carpetaId, mensajePersonalizado) {
     return { error: 'No existen carpetas de WhatsApp configuradas en SQLite' }
   }
 
-  // Verificar si es miembro en SQLite
-  const miembro = findWsMiembroByTelefono(carpeta.id, normPhone)
+  // Verificar si es miembro en SQLite, o darlo de alta en la carpeta
+  let miembro = findWsMiembroByTelefono(carpeta.id, normPhone)
   if (!miembro) {
-    return { error: `No se encontro el contacto ${normPhone} en la carpeta "${carpeta.nombre}"` }
+    try {
+      miembro = createWsMiembro({
+        carpeta_id: carpeta.id,
+        telefono: normPhone
+      })
+    } catch {
+      // Continuar con el envío
+    }
   }
 
   const jid = `${normPhone}@s.whatsapp.net`

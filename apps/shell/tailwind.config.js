@@ -3,6 +3,9 @@ export default {
   content: [
     "./index.html",
     "./src/**/*.{js,ts,jsx,tsx}",
+    "../sm/src/**/*.{js,ts,jsx,tsx}",
+    "../crm/src/**/*.{js,ts,jsx,tsx}",
+    "../contactos/src/**/*.{js,ts,jsx,tsx}",
   ],
   theme: {
     extend: {

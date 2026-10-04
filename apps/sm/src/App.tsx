@@ -55,7 +55,6 @@ const App = () => (
       <Sonner />
       <HashRouter>
         <AuthGate>
-          <Onboarding />
           <ErrorBoundary>
             <Suspense fallback={<RouteFallback />}>
               <Routes>

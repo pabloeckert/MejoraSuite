@@ -37,6 +37,8 @@ export interface SuiteWaApi {
   createCarpeta: (carpeta: { nombre: string; color?: string }) => Promise<WsCarpeta>;
   getMiembros: (carpetaId?: number) => Promise<WsMiembro[]>;
   createMiembro: (miembro: { carpeta_id: number; persona_id?: number | null; telefono: string }) => Promise<WsMiembro>;
+  sendMessage: (telefono: string, mensaje: string, carpetaId?: number) => Promise<{ started?: boolean; msgId?: string; error?: string }>;
+  sendDirectMessage: (telefono: string, mensaje: string, nombre?: string) => Promise<{ started?: boolean; msgId?: string; error?: string }>;
 }
 
 export interface SuiteSmApi {

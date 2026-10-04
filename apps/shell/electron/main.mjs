@@ -47,7 +47,9 @@ import {
   stopWaEngine,
   connectWhatsApp,
   logoutWhatsApp,
-  getWaEngineState
+  getWaEngineState,
+  handleSend,
+  handleAddAndSend
 } from './wa-engine/index.mjs'
 import {
   dispatchPropuestaZernio,
@@ -586,6 +588,14 @@ function registerIpcHandlers() {
 
   ipcMain.handle('suite:wa:createMiembro', (_e, miembro) => {
     return createWsMiembro(miembro)
+  })
+
+  ipcMain.handle('suite:wa:sendMessage', async (_e, telefono, mensaje, carpetaId) => {
+    return await handleSend(telefono, carpetaId, mensaje)
+  })
+
+  ipcMain.handle('suite:wa:sendDirectMessage', async (_e, telefono, mensaje, nombre) => {
+    return await handleAddAndSend(telefono, nombre, mensaje)
   })
 
   ipcMain.handle('suite:getDbStatus', () => {

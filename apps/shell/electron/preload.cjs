@@ -8,6 +8,8 @@ const waApi = {
   createCarpeta: (carpeta) => ipcRenderer.invoke('suite:wa:createCarpeta', carpeta),
   getMiembros: (carpetaId) => ipcRenderer.invoke('suite:wa:getMiembros', carpetaId),
   createMiembro: (miembro) => ipcRenderer.invoke('suite:wa:createMiembro', miembro),
+  sendMessage: (telefono, mensaje, carpetaId) => ipcRenderer.invoke('suite:wa:sendMessage', telefono, mensaje, carpetaId),
+  sendDirectMessage: (telefono, mensaje, nombre) => ipcRenderer.invoke('suite:wa:sendDirectMessage', telefono, mensaje, nombre),
 }
 
 contextBridge.exposeInMainWorld('suite', {
@@ -60,6 +62,8 @@ contextBridge.exposeInMainWorld('suite', {
       createCarpeta: (carpeta) => ipcRenderer.invoke('suite:wa:createCarpeta', carpeta),
       getMiembros: (carpetaId) => ipcRenderer.invoke('suite:wa:getMiembros', carpetaId),
       createMiembro: (miembro) => ipcRenderer.invoke('suite:wa:createMiembro', miembro),
+      sendMessage: (telefono, mensaje, carpetaId) => ipcRenderer.invoke('suite:wa:sendMessage', telefono, mensaje, carpetaId),
+      sendDirectMessage: (telefono, mensaje, nombre) => ipcRenderer.invoke('suite:wa:sendDirectMessage', telefono, mensaje, nombre),
     },
   },
   onTelemetryUpdate: (callback) => {
