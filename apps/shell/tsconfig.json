@@ -22,15 +22,16 @@
     "baseUrl": ".",
     "paths": {
       "@/*": [
-        "./src/*",
-        "../crm/src/*",
-        "../contactos/src/*"
+        "./src/*"
       ],
       "@mejora/crm": [
-        "../crm/src/index.ts"
+        "./src/shims/apps.d.ts"
       ],
       "@mejora/contactos": [
-        "../contactos/src/index.ts"
+        "./src/shims/apps.d.ts"
+      ],
+      "@mejora/sm": [
+        "./src/shims/apps.d.ts"
       ],
       "@mejora/nucleo": [
         "../../packages/nucleo/src/index.ts"

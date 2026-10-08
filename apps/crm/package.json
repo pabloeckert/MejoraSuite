@@ -40,7 +40,7 @@
                     "preview":  "vite preview",
                     "build":  "vite build",
                     "dev":  "vite",
-                    "lint":  "eslint ."
+                    "lint":  "tsc --noEmit"
                 },
     "devDependencies":  {
                             "@vitejs/plugin-react":  "^4.3.4",

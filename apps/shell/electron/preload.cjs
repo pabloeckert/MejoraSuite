@@ -14,6 +14,7 @@ const waApi = {
 
 contextBridge.exposeInMainWorld('suite', {
   open: (target, demoMode) => ipcRenderer.invoke('suite:open', target, demoMode),
+  openExternal: (url) => ipcRenderer.invoke('suite:openExternal', url),
   checkMejoraWs: () => ipcRenderer.invoke('suite:checkMejoraWs'),
   getTelemetry: () => ipcRenderer.invoke('suite:getTelemetry'),
   getDbStatus: () => ipcRenderer.invoke('suite:getDbStatus'),

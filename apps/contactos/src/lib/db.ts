@@ -97,6 +97,9 @@ export async function getAllContacts(): Promise<UnifiedContact[]> {
           qualityStatus: p.estado_calidad || "util",
           source: "sqlite_nucleo",
           createdAt: p.creado_el ? new Date(p.creado_el) : new Date(),
+          isDuplicate: false,
+          confidence: 1,
+          aiCleaned: false,
         })) as UnifiedContact[];
       }
     } catch (err) {

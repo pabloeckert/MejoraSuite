@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useCallback, Suspense } from 'react';
-import { Header } from './components/Header';
+import { Header, SuiteView } from './components/Header';
 import { TelemetryBar } from './components/TelemetryBar';
 import { LauncherMatrix } from './components/LauncherMatrix';
 import { SystemHealthModal } from './components/SystemHealthModal';
 import { SemillasOroModal } from './components/SemillasOroModal';
+import { EmbeddedAppViewer } from './components/EmbeddedAppViewer';
 import { fetchTelemetry, TelemetryData } from './services/telemetryService';
-import { ShieldCheck, Compass, Zap, Layers, Database, ArrowLeft, Briefcase, Sparkles, Share2, MessageCircle, Award } from 'lucide-react';
+import { ShieldCheck, Compass, Zap, Layers, Database, ArrowLeft, Briefcase, Sparkles, Share2, MessageCircle, Award, FileText, TrendingUp, Users2, Globe } from 'lucide-react';
 import { CrmApp, CrmNucleoWidget } from '@mejora/crm';
 import { ContactosApp, ContactosNucleoWidget } from '@mejora/contactos';
 import { SmApp } from '@mejora/sm';
@@ -31,7 +32,7 @@ const initialTelemetry: TelemetryData = {
 };
 
 export function App() {
-  const [activeView, setActiveView] = useState<'hub' | 'crm' | 'contactos' | 'sm' | 'wa'>('hub');
+  const [activeView, setActiveView] = useState<SuiteView>('hub');
   const [telemetry, setTelemetry] = useState<TelemetryData>(initialTelemetry);
   const [loading, setLoading] = useState(false);
   const [healthModalOpen, setHealthModalOpen] = useState(false);
@@ -315,6 +316,70 @@ export function App() {
             <WaDashboard />
           </div>
         </div>
+      )}
+
+      {/* Vista 6: MejoraDiagnostico Integrado */}
+      {activeView === 'diagnostico' && (
+        <EmbeddedAppViewer
+          id="diagnostico"
+          title="MejoraDiagnostico"
+          badge="Boca de Captura Principal"
+          category="Hook Pyme"
+          categoryColor="bg-amber-50 text-amber-800 border-amber-200"
+          icon={<FileText className="w-5 h-5 text-amber-600" />}
+          defaultUrl="https://diagnostico.mejoraok.com"
+          localUrl="http://localhost:3000"
+          description="Test de diagnóstico empresarial en 8 dimensiones. Scoring automático, informe PDF y derivación directa a WhatsApp."
+          onBack={() => setActiveView('hub')}
+        />
+      )}
+
+      {/* Vista 7: MejoraDecisiones (Tablero Nash) Integrado */}
+      {activeView === 'decisiones' && (
+        <EmbeddedAppViewer
+          id="decisiones"
+          title="MejoraDecisiones"
+          badge="Tablero Nash & Poder"
+          category="Hook Alta Dirección"
+          categoryColor="bg-cyan-50 text-cyan-800 border-cyan-200"
+          icon={<TrendingUp className="w-5 h-5 text-cyan-600" />}
+          defaultUrl="https://pabloeckert.github.io/MejoraDecisiones/"
+          localUrl="http://localhost:5175"
+          description="Simulador macro y teoría de juegos 2x2. Grafo interactivo de actores e indicadores BCRA/INDEC en vivo con modo dual oscuro/directorio."
+          onBack={() => setActiveView('hub')}
+        />
+      )}
+
+      {/* Vista 8: MejoraApp (Portal de Clientes PWA) Integrado */}
+      {activeView === 'app' && (
+        <EmbeddedAppViewer
+          id="app"
+          title="MejoraApp"
+          badge="Portal Clientes PWA"
+          category="Comunidad & Retención"
+          categoryColor="bg-blue-50 text-blue-800 border-blue-200"
+          icon={<Users2 className="w-5 h-5 text-blue-600" />}
+          defaultUrl="https://app.mejoraok.com"
+          localUrl="http://localhost:4173"
+          description="Portal privado para líderes y miembros de comunidad. Muro interactivo, contenidos exclusivos y contraste calibrado para modo oscuro."
+          onBack={() => setActiveView('hub')}
+        />
+      )}
+
+      {/* Vista 9: Mejoraok (Web Institucional & Leads) Integrado */}
+      {activeView === 'ok' && (
+        <EmbeddedAppViewer
+          id="ok"
+          title="Mejoraok"
+          badge="Front Door Institucional"
+          category="Portal Institucional"
+          categoryColor="bg-slate-100 text-slate-800 border-slate-200"
+          icon={<Globe className="w-5 h-5 text-mc-azul" />}
+          defaultUrl="https://mejoraok.com"
+          localUrl="http://localhost:5173"
+          description="Sitio institucional oficial de Mejora Continua. Manifiesto, oferta de servicios de consultoría y derivador estratégico."
+          onBack={() => setActiveView('hub')}
+        />
       )}
 
       {/* Health Modal */}

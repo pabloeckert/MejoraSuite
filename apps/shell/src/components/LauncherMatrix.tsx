@@ -18,7 +18,7 @@ import { TelemetryData } from '../services/telemetryService';
 
 interface LauncherMatrixProps {
   telemetry: TelemetryData;
-  onNavigate?: (view: 'crm' | 'contactos' | 'sm' | 'wa') => void;
+  onNavigate?: (view: 'crm' | 'contactos' | 'sm' | 'wa' | 'diagnostico' | 'decisiones' | 'app' | 'ok') => void;
 }
 
 interface ModuleCard {
@@ -178,6 +178,22 @@ export const LauncherMatrix: React.FC<LauncherMatrixProps> = ({ telemetry, onNav
     }
     if (mod.id === 'ws') {
       onNavigate?.('wa');
+      return;
+    }
+    if (mod.id === 'diagnostico') {
+      onNavigate?.('diagnostico');
+      return;
+    }
+    if (mod.id === 'decisiones') {
+      onNavigate?.('decisiones');
+      return;
+    }
+    if (mod.id === 'app') {
+      onNavigate?.('app');
+      return;
+    }
+    if (mod.id === 'ok') {
+      onNavigate?.('ok');
       return;
     }
     if (mod.isProtocol) {

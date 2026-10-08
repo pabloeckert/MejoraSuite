@@ -1,5 +1,7 @@
-import { RefreshCw, Activity, ExternalLink, ShieldCheck, LayoutDashboard, Briefcase, Sparkles, Share2, MessageCircle, Award } from 'lucide-react';
+import { RefreshCw, Activity, ExternalLink, ShieldCheck, LayoutDashboard, Briefcase, Sparkles, Share2, MessageCircle, Award, Globe, ChevronDown } from 'lucide-react';
 import { TelemetryData } from '../services/telemetryService';
+
+export type SuiteView = 'hub' | 'crm' | 'contactos' | 'sm' | 'wa' | 'diagnostico' | 'decisiones' | 'app' | 'ok';
 
 interface HeaderProps {
   telemetry: TelemetryData;
@@ -7,8 +9,8 @@ interface HeaderProps {
   onRefresh: () => void;
   onOpenHealth: () => void;
   onOpenSemillas?: () => void;
-  activeView?: 'hub' | 'crm' | 'contactos' | 'sm' | 'wa';
-  onViewChange?: (view: 'hub' | 'crm' | 'contactos' | 'sm' | 'wa') => void;
+  activeView?: SuiteView;
+  onViewChange?: (view: SuiteView) => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -104,6 +106,59 @@ export const Header: React.FC<HeaderProps> = ({
               <MessageCircle className="w-3.5 h-3.5" />
               <span>WhatsApp</span>
             </button>
+
+            {/* Selector de Aplicaciones Ecosistema */}
+            <div className="relative group">
+              <button
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-spartan font-bold uppercase tracking-wider transition-all cursor-pointer ${
+                  ['diagnostico', 'decisiones', 'app', 'ok'].includes(activeView)
+                    ? 'bg-amber-500 text-white shadow-sm'
+                    : 'text-slate-600 hover:text-slate-900 hover:bg-white/60'
+                }`}
+              >
+                <Globe className="w-3.5 h-3.5" />
+                <span>Ecosistema</span>
+                <ChevronDown className="w-3 h-3" />
+              </button>
+              <div className="absolute right-0 mt-1 w-52 bg-white rounded-xl shadow-xl border border-slate-200 py-1.5 hidden group-hover:block z-50 animate-fadeIn">
+                <button
+                  onClick={() => onViewChange('diagnostico')}
+                  className={`w-full text-left px-3.5 py-2 text-xs flex items-center justify-between hover:bg-amber-50 cursor-pointer ${
+                    activeView === 'diagnostico' ? 'text-amber-600 font-bold bg-amber-50/50' : 'text-slate-700'
+                  }`}
+                >
+                  <span>MejoraDiagnostico</span>
+                  <span className="text-[10px] text-amber-600 bg-amber-100 px-1.5 py-0.5 rounded font-bold font-spartan">Hook Pyme</span>
+                </button>
+                <button
+                  onClick={() => onViewChange('decisiones')}
+                  className={`w-full text-left px-3.5 py-2 text-xs flex items-center justify-between hover:bg-cyan-50 cursor-pointer ${
+                    activeView === 'decisiones' ? 'text-cyan-600 font-bold bg-cyan-50/50' : 'text-slate-700'
+                  }`}
+                >
+                  <span>MejoraDecisiones</span>
+                  <span className="text-[10px] text-cyan-600 bg-cyan-100 px-1.5 py-0.5 rounded font-bold font-spartan">Nash 2x2</span>
+                </button>
+                <button
+                  onClick={() => onViewChange('app')}
+                  className={`w-full text-left px-3.5 py-2 text-xs flex items-center justify-between hover:bg-blue-50 cursor-pointer ${
+                    activeView === 'app' ? 'text-blue-600 font-bold bg-blue-50/50' : 'text-slate-700'
+                  }`}
+                >
+                  <span>MejoraApp</span>
+                  <span className="text-[10px] text-blue-600 bg-blue-100 px-1.5 py-0.5 rounded font-bold font-spartan">Portal PWA</span>
+                </button>
+                <button
+                  onClick={() => onViewChange('ok')}
+                  className={`w-full text-left px-3.5 py-2 text-xs flex items-center justify-between hover:bg-slate-100 cursor-pointer ${
+                    activeView === 'ok' ? 'text-mc-azul font-bold bg-slate-50' : 'text-slate-700'
+                  }`}
+                >
+                  <span>Mejoraok</span>
+                  <span className="text-[10px] text-slate-700 bg-slate-200 px-1.5 py-0.5 rounded font-bold font-spartan">Institucional</span>
+                </button>
+              </div>
+            </div>
           </div>
         )}
 

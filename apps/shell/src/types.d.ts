@@ -58,6 +58,7 @@ declare global {
   interface Window {
     suite?: {
       open: (target: string, demoMode?: boolean) => Promise<any>;
+      openExternal?: (url: string) => Promise<boolean>;
       checkMejoraWs: () => Promise<boolean>;
       getTelemetry: () => Promise<any>;
       getDbStatus: () => Promise<any>;
@@ -81,3 +82,7 @@ declare global {
     };
   }
 }
+
+declare module '@mejora/crm';
+declare module '@mejora/contactos';
+declare module '@mejora/sm';

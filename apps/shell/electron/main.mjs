@@ -233,6 +233,24 @@ function createWindow() {
   })
   mainWindow.webContents.session.setPermissionRequestHandler((_wc, _permission, callback) => callback(false))
 
+  // Permitir la integración visual de las aplicaciones del ecosistema en vistas embebidas
+  mainWindow.webContents.session.webRequest.onHeadersReceived((details, callback) => {
+    const responseHeaders = { ...details.responseHeaders }
+    delete responseHeaders['x-frame-options']
+    delete responseHeaders['X-Frame-Options']
+    if (responseHeaders['content-security-policy']) {
+      responseHeaders['content-security-policy'] = responseHeaders['content-security-policy'].map((csp) =>
+        csp.replace(/frame-ancestors[^;]+;?/gi, '')
+      )
+    }
+    if (responseHeaders['Content-Security-Policy']) {
+      responseHeaders['Content-Security-Policy'] = responseHeaders['Content-Security-Policy'].map((csp) =>
+        csp.replace(/frame-ancestors[^;]+;?/gi, '')
+      )
+    }
+    callback({ cancel: false, responseHeaders })
+  })
+
   mainWindow.webContents.on('console-message', (_event, level, message, line, sourceId) => {
     console.log(`[Renderer] [level=${level}] ${message} (${sourceId}:${line})`)
   })
@@ -353,6 +371,14 @@ function registerIpcHandlers() {
     shell.openExternal(`${url}${demoParam}`)
     return true
   })
+
+  ipcMain.handle('suite:openExternal', (_e, url) => {
+    if (url && (url.startsWith('https://') || url.startsWith('http://'))) {
+      shell.openExternal(url);
+      return true;
+    }
+    return false;
+  });
 
   ipcMain.handle('suite:checkMejoraWs', async () => {
     try {
