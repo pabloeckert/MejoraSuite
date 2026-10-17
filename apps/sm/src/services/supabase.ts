@@ -9,7 +9,6 @@ import { supabase } from "@/integrations/supabase/client";
 import type { ProposalDetail } from "@/components/ProposalDetailDialog";
 import type { DocRow } from "@/shared/types";
 import type { Database } from "@/integrations/supabase/types";
-import { isElectronLocal, fetchPropuestasFromSqlite, createPropuestaInSqlite, updatePropuestaEstadoInSqlite } from "@/lib/nucleoAdapter";
 
 export type ProposalInsert = Database["public"]["Tables"]["proposals"]["Insert"];
 
@@ -220,115 +219,55 @@ export const dialogueApi = {
 // ═══════════════════════════════════════
 
 export const proposalsApi = {
-  create: async (fields: ProposalInsert) => {
-    if (isElectronLocal()) {
-      const res = await createPropuestaInSqlite({
-        titulo: (fields as any).title || (fields as any).hook || 'Nueva Propuesta',
-        contenido: (fields as any).body || '',
-        formato: (fields as any).format || 'post',
-        estado: ((fields as any).status as any) || 'borrador',
-      });
-      return { data: res as any, error: null };
-    }
-    return supabase.from("proposals").insert(fields).select().single();
-  },
+  create: (fields: ProposalInsert) =>
+    supabase.from("proposals").insert(fields).select().single(),
 
   // Pagina de a 1000 filas reales — sin esto, pasado ese volumen faltaban
   // propuestas en silencio tanto acá como en el export de Auditoría.
-  list: async () => {
-    if (isElectronLocal()) {
-      const sqlitePropuestas = await fetchPropuestasFromSqlite();
-      const mapped: ProposalDetail[] = sqlitePropuestas.map((p) => ({
-        id: String(p.id),
-        title: p.titulo,
-        hook: p.titulo,
-        body: p.contenido,
-        cta: null,
-        hashtags: [],
-        format: p.formato || 'post',
-        status: p.estado,
-        rejection_reason: null,
-        scheduled_at: p.programado_el || null,
-        published_at: p.publicado_el || null,
-        created_at: p.creado_el || new Date().toISOString(),
-        oferta: 'General',
-        zernio_post_id: null,
-        rendered_image_path: null,
-        is_test: false,
-        dialogue_sessions: { topic: 'Estrategia de Negocio' },
-      }));
-      return { data: mapped, error: null };
-    }
-
-    return fetchAllPages<ProposalDetail>((from, to) =>
+  list: () =>
+    fetchAllPages<ProposalDetail>((from, to) =>
       supabase
         .from("proposals")
         .select("*, dialogue_sessions(topic)")
         .order("created_at", { ascending: false })
         .range(from, to)
-    );
-  },
+    ),
 
-  approve: async (id: string) => {
-    if (isElectronLocal()) {
-      await updatePropuestaEstadoInSqlite(Number(id), 'aprobado');
-      return { data: null, error: null };
-    }
-    return supabase.from("proposals").update({ status: "approved" }).eq("id", id);
-  },
+  approve: (id: string) =>
+    supabase.from("proposals").update({ status: "approved" }).eq("id", id),
 
-  reject: async (id: string, reason: string) => {
-    if (isElectronLocal()) {
-      await updatePropuestaEstadoInSqlite(Number(id), 'rechazado');
-      return { data: null, error: null };
-    }
-    return supabase
+  reject: (id: string, reason: string) =>
+    supabase
       .from("proposals")
       .update({ status: "rejected", rejection_reason: reason })
-      .eq("id", id);
-  },
+      .eq("id", id),
 
-  schedule: async (id: string, date: string, oferta: string) => {
-    if (isElectronLocal()) {
-      await updatePropuestaEstadoInSqlite(Number(id), 'programado', date);
-      return { data: null, error: null };
-    }
-    return supabase
+  schedule: (id: string, date: string, oferta: string) =>
+    supabase
       .from("proposals")
       .update({ status: "scheduled", scheduled_at: date, oferta })
-      .eq("id", id);
-  },
+      .eq("id", id),
 
   // Monitor de reversión (PLAN_AUTONOMIA.md Fase 2): cancela una propuesta
   // todavía no publicada (autoagendada o programada a mano) antes de que el
   // cron de publish-scheduled-posts.yml la levante. Para una ya publicada,
   // la reversión es scripts/manage-post.mjs (workflow_dispatch), no esto.
-  cancel: async (id: string) => {
-    if (isElectronLocal()) {
-      await updatePropuestaEstadoInSqlite(Number(id), 'rechazado');
-      return { data: null, error: null };
-    }
-    return supabase
+  cancel: (id: string) =>
+    supabase
       .from("proposals")
       .update({ status: "rejected", rejection_reason: "Cancelada antes de publicar" })
-      .eq("id", id);
-  },
+      .eq("id", id),
 
   // Recuperar una propuesta rechazada/cancelada (B2, auditoría 2026-08-31).
   // Vuelve a `pending` y limpia scheduled_at/rejection_reason — desde ahí se
   // puede volver a aprobar/agendar. No toca `published` (no hay reactivación
   // de algo que ya salió).
-  reactivate: async (id: string) => {
-    if (isElectronLocal()) {
-      await updatePropuestaEstadoInSqlite(Number(id), 'pendiente_revision');
-      return { data: null, error: null };
-    }
-    return supabase
+  reactivate: (id: string) =>
+    supabase
       .from("proposals")
       .update({ status: "pending", scheduled_at: null, rejection_reason: null })
       .eq("id", id)
-      .neq("status", "published");
-  },
+      .neq("status", "published"),
 
   pending: () =>
     supabase
@@ -347,13 +286,8 @@ export const proposalsApi = {
 
   remove: (id: string) => supabase.from("proposals").delete().eq("id", id),
 
-  reschedule: async (id: string, date: string) => {
-    if (isElectronLocal()) {
-      await updatePropuestaEstadoInSqlite(Number(id), 'programado', date);
-      return { data: null, error: null };
-    }
-    return supabase.from("proposals").update({ scheduled_at: date }).eq("id", id);
-  },
+  reschedule: (id: string, date: string) =>
+    supabase.from("proposals").update({ scheduled_at: date }).eq("id", id),
 
   // Valores reales que produce el pipeline (post | carrusel | historia) —
   // no reel/story (legacy del CHECK constraint, sin caller real) ni video

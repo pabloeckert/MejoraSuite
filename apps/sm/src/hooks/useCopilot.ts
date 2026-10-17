@@ -3,16 +3,11 @@ import { useQuery } from "@tanstack/react-query";
 import { getCopilotAdvice, sendCopilotMessage, type CopilotChatMessage } from "@/services/ai";
 
 export function useCopilotAdvice() {
-  return {
-    data: {
-      advice_date: new Date().toISOString().slice(0, 10),
-      content: "Focalizar en testimonios reales y casos prácticos de liderazgo operativo en formato carrusel.",
-      evidence: {},
-      cached: true,
-    },
-    isLoading: false,
-    isError: false,
-  };
+  return useQuery({
+    queryKey: ["copilot-advice"],
+    queryFn: getCopilotAdvice,
+    staleTime: 60 * 60 * 1000, // cacheado por fecha en el backend, no hace falta refetch agresivo
+  });
 }
 
 // Chat stateless (ver migración 015): el historial vive acá, en memoria del

@@ -70,10 +70,6 @@ export interface UnifiedContact {
   relevanceScore?: number;
   segment?: "A" | "B" | "C";
   needsAIScoring?: boolean;
-  // Calidad y SQLite Núcleo
-  qualityScore?: number;
-  qualityStatus?: string;
-  createdAt?: Date;
 }
 
 export interface FieldValidation {

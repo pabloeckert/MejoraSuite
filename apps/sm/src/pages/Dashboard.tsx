@@ -865,9 +865,7 @@ function DashboardContent() {
       </div>
 
       {/* Copiloto Reflexivo (Fase 4 del plan estratégico 2026-08-16) */}
-      <ErrorBoundary>
-        <CopilotCard />
-      </ErrorBoundary>
+      <CopilotCard />
 
       {/* KPIs reales de rendimiento social (Fase A, 2026-08-07) */}
       <div>

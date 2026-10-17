@@ -3,17 +3,12 @@ import { Link, useLocation } from "react-router-dom";
 import {
   LayoutDashboard,
   BookOpen,
-  MessageSquare,
   Settings,
   CalendarDays,
-  FileCheck,
   Upload,
   MonitorPlay,
-  MessagesSquare,
-  ShieldCheck,
   Menu,
   LogOut,
-  Sparkles,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
@@ -26,32 +21,19 @@ const navGroups: {
   items: { label: string; sublabel?: string; icon: typeof LayoutDashboard; path: string }[];
 }[] = [
   {
-    label: "Panel",
-    items: [{ label: "Mesa Ejecutiva (Directo)", icon: LayoutDashboard, path: "/mesa" }],
-  },
-  {
-    label: "Estrategia y Creación",
+    label: "Mesa de Control",
     items: [
-      { label: "Mesa Ejecutiva", sublabel: "Crear contenido", icon: MessageSquare, path: "/mesa" },
-      { label: "Citas y Stories", sublabel: "Fin de semana", icon: Sparkles, path: "/citas" },
-      { label: "Biblioteca y Bóveda", sublabel: "Documentos y libros", icon: BookOpen, path: "/boveda" },
-      { label: "Subir material", icon: Upload, path: "/subir-material" },
+      { label: "Tablero Semanal", sublabel: "Revisión y aprobación", icon: LayoutDashboard, path: "/" },
+      { label: "Biblioteca y Bóveda", sublabel: "Activos y fotos RAG", icon: BookOpen, path: "/boveda" },
     ],
   },
   {
-    label: "Operación y CRM",
+    label: "Operación MVP",
     items: [
-      { label: "Conversaciones", sublabel: "Inbox social y CRM", icon: MessagesSquare, path: "/conversaciones" },
-      { label: "Propuestas", icon: FileCheck, path: "/propuestas" },
-      { label: "Calendario", icon: CalendarDays, path: "/calendario" },
-      { label: "Monitor", icon: MonitorPlay, path: "/monitor" },
-    ],
-  },
-  {
-    label: "Sistema",
-    items: [
-      { label: "Auditoría", icon: ShieldCheck, path: "/auditoria" },
-      { label: "Configuración", icon: Settings, path: "/configuracion" },
+      { label: "Subir material", sublabel: "Ingesta de activos", icon: Upload, path: "/subir-material" },
+      { label: "Calendario", sublabel: "Vista de despacho", icon: CalendarDays, path: "/calendario" },
+      { label: "Monitor", sublabel: "Publicación y cola", icon: MonitorPlay, path: "/monitor" },
+      { label: "Configuración", sublabel: "Ajustes y Zernio", icon: Settings, path: "/configuracion" },
     ],
   },
 ];
@@ -62,7 +44,7 @@ function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
   return (
     <div className="flex h-full flex-col">
       <div className="px-6 py-6">
-        <img src={lockup} alt="Mejora Continua" className="h-10 max-h-16 w-auto object-contain" />
+        <img src={lockup} alt="Mejora Continua" className="h-[22px] w-auto object-contain" />
         <p className="mt-1.5 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground [font-family:var(--font-heading-alt)]">
           MejoraSM
         </p>
@@ -131,7 +113,7 @@ export function AppSidebar() {
           Hallazgo real de auditoría 2026-08-25: sin esto, la app era
           prácticamente inusable desde el teléfono. */}
       <header className="flex items-center justify-between border-b border-sidebar-border bg-sidebar-background px-4 py-3 md:hidden">
-        <img src={lockup} alt="Mejora Continua" className="h-8 max-h-16 w-auto object-contain" />
+        <img src={lockup} alt="Mejora Continua" className="h-[18px] w-auto object-contain" />
         <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
           <Button
             variant="ghost"
