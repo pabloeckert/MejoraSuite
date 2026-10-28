@@ -168,7 +168,7 @@ export const Header: React.FC<HeaderProps> = ({
           {onOpenSemillas && (
             <button
               onClick={onOpenSemillas}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-50 border border-amber-300 hover:border-amber-400 text-xs font-bold text-amber-800 transition-all cursor-pointer shadow-sm hover:bg-amber-100 font-spartan uppercase tracking-wider"
+              className="flex items-center gap-1.5 px-3.5 py-2 min-h-[44px] rounded-full bg-amber-50 border border-amber-300 hover:border-amber-400 text-xs font-bold text-amber-800 transition-all cursor-pointer shadow-sm hover:bg-amber-100 font-spartan uppercase tracking-wider"
               title="Administrar las 3 Semillas de Oro (Cold Start) para Gemini Pro"
             >
               <Award className="w-3.5 h-3.5 text-amber-600" />
@@ -176,14 +176,14 @@ export const Header: React.FC<HeaderProps> = ({
             </button>
           )}
 
-          {/* Gateway Status Badge */}
+          {/* Chip de Monitoreo Transparente de Servidor (UX/UI Mandato) */}
           <button
             onClick={onOpenHealth}
-            className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-100 border border-slate-200 hover:border-slate-300 text-xs font-medium text-slate-700 transition-all hover:bg-slate-200/60 cursor-pointer"
+            className="flex items-center gap-2 px-3.5 py-2 min-h-[44px] rounded-full bg-slate-100 border border-slate-200 hover:border-slate-300 text-xs font-medium text-slate-700 transition-all hover:bg-slate-200/60 cursor-pointer"
             title="Ver estado detallado de todos los nodos del ecosistema"
           >
             <span
-              className={`w-2 h-2 rounded-full ${
+              className={`w-2.5 h-2.5 rounded-full shrink-0 ${
                 telemetry.gatewayStatus === 'online'
                   ? 'bg-emerald-500 pulse-indicator'
                   : telemetry.gatewayStatus === 'degraded'
@@ -191,21 +191,24 @@ export const Header: React.FC<HeaderProps> = ({
                   : 'bg-rose-500'
               }`}
             />
-            <span className="hidden md:inline text-slate-500">Gateway:</span>
             <span className="font-semibold text-slate-900">
-              {telemetry.gatewayStatus === 'online' ? 'Conectado' : 'Revisar'}
+              {telemetry.gatewayStatus === 'online'
+                ? 'Servidor Local 127.0.0.1:4002 (SQLite WAL)'
+                : telemetry.gatewayStatus === 'degraded'
+                ? 'Cambios pendientes de sincronizar'
+                : 'Servidor fuera de línea / Sin conexión'}
             </span>
-            <span className="text-[10px] text-slate-500 font-mono">
+            <span className="text-[10px] text-slate-500 font-mono hidden sm:inline">
               ({telemetry.latencyMs}ms)
             </span>
-            <ShieldCheck className="w-3.5 h-3.5 text-mc-azul ml-0.5" />
+            <ShieldCheck className="w-4 h-4 text-mc-azul ml-0.5 shrink-0" />
           </button>
 
           {/* Refresh Button */}
           <button
             onClick={onRefresh}
             disabled={loading}
-            className="p-2 rounded-lg bg-slate-100 border border-slate-200 hover:border-slate-300 text-slate-600 hover:text-slate-900 transition-all cursor-pointer disabled:opacity-50"
+            className="p-2.5 min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg bg-slate-100 border border-slate-200 hover:border-slate-300 text-slate-600 hover:text-slate-900 transition-all cursor-pointer disabled:opacity-50"
             title="Actualizar datos de telemetría"
           >
             <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin text-mc-azul' : ''}`} />
