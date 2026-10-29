@@ -1,4 +1,4 @@
-import { LayoutGrid, Users, MessageSquare, Package, LogOut, Settings, Search, BarChart3, MessageCircle, Sparkles } from "lucide-react";
+import { LayoutGrid, Users, MessageSquare, Package, LogOut, Settings, Search, BarChart3, MessageCircle, Sparkles, Clock } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -19,6 +19,7 @@ import {
 
 const items = [
   { title: "Vista General", url: "/", icon: LayoutGrid },
+  { title: "Prospectos (SLA 48h)", url: "/prospectos", icon: Clock },
   { title: "Clientes", url: "/clients", icon: Users },
   { title: "Interacciones", url: "/interactions", icon: MessageSquare },
   { title: "Reportes", url: "/reports", icon: BarChart3, roles: ["admin", "supervisor"] },

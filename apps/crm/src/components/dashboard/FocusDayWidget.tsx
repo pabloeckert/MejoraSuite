@@ -1,9 +1,10 @@
 import { differenceInDays, differenceInHours, isToday, isBefore } from "date-fns";
-import { Zap, Clock, Calendar, Timer, ChevronRight, CheckCircle2 } from "lucide-react";
+import { Zap, Clock, Calendar, Timer, ChevronRight, CheckCircle2, AlertTriangle } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { AGING_THRESHOLDS, CURRENCY_SYMBOLS } from "@/lib/constants";
 import type { Interaction } from "@/lib/types";
+import { useProspectosNucleo } from "@/hooks/useProspectosNucleo";
 
 type Urgency = "vencido" | "hoy" | "caliente";
 
@@ -74,6 +75,10 @@ interface FocusDayWidgetProps {
 
 export function FocusDayWidget({ interactions, navigate }: FocusDayWidgetProps) {
   const items = buildFocusItems(interactions);
+  const { data: prospectos = [] } = useProspectosNucleo();
+  const leadsUrgentes = prospectos.filter(
+    (p) => p.estado === "CAPTURADO" && (p.slaEstado === "ROJO" || p.slaEstado === "AMARILLO")
+  );
 
   return (
     <Card className="border-primary/20 bg-primary/[0.02] shadow-sm">
@@ -92,6 +97,22 @@ export function FocusDayWidget({ interactions, navigate }: FocusDayWidgetProps) 
       </CardHeader>
 
       <CardContent className="px-5 pb-4">
+        {leadsUrgentes.length > 0 && (
+          <div
+            onClick={() => navigate("/prospectos")}
+            className="mb-3 p-3 rounded-lg bg-rose-50 border border-rose-300 text-rose-900 flex items-center justify-between cursor-pointer hover:bg-rose-100 transition-colors shadow-sm"
+          >
+            <div className="flex items-center gap-2 text-xs font-semibold">
+              <AlertTriangle className="h-4 w-4 text-rose-600 shrink-0" />
+              <span>
+                {leadsUrgentes.length} lead{leadsUrgentes.length > 1 ? "s" : ""} con SLA de 48h en riesgo o vencido
+              </span>
+            </div>
+            <span className="text-[11px] font-bold text-rose-700 underline flex items-center gap-1">
+              Atender en Prospectos →
+            </span>
+          </div>
+        )}
         {items.length === 0 ? (
           <div className="flex items-center gap-3 py-4 text-success">
             <CheckCircle2 className="h-5 w-5 shrink-0" />

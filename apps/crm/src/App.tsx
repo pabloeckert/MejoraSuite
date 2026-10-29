@@ -14,6 +14,7 @@ import Auth from "./pages/Auth";
 
 // Lazy load pages for code splitting
 const Dashboard = lazy(() => import("./pages/Dashboard"));
+const Prospectos = lazy(() => import("./pages/Prospectos"));
 const Clients = lazy(() => import("./pages/Clients"));
 const Interactions = lazy(() => import("./pages/Interactions"));
 const Products = lazy(() => import("./pages/Products"));
@@ -72,6 +73,7 @@ const App = () => (
               <Routes>
                 <Route path="/auth" element={<PublicRoute><Auth /></PublicRoute>} />
                 <Route path="/" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+                <Route path="/prospectos" element={<ProtectedRoute><Prospectos /></ProtectedRoute>} />
                 <Route path="/clients" element={<ProtectedRoute><Clients /></ProtectedRoute>} />
                 <Route path="/interactions" element={<ProtectedRoute><Interactions /></ProtectedRoute>} />
                 <Route path="/products" element={<ProtectedRoute><Products /></ProtectedRoute>} />
