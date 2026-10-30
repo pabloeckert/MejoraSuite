@@ -650,7 +650,7 @@ export const WaDashboard: React.FC = () => {
               {/* Plantillas Estratégicas Rápidas */}
               <div className="space-y-1.5">
                 <span className="text-xs font-semibold uppercase tracking-wider text-slate-600 flex items-center gap-1.5">
-                  <Sparkles className="w-3.5 h-3.5 text-[#F7CC13]" />
+                  <Sparkles className="w-3.5 h-3.5 text-amber-500" />
                   <span>Plantillas del Embudo Estratégico B2B:</span>
                 </span>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
