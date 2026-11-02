@@ -53,13 +53,25 @@ interface ProspectosSlaTableProps {
 
 const CANAL_LABELS: Record<string, string> = {
   landing_hostinger: "Landing Web (Hostinger)",
-  diagnostico_4d: "Diagnóstico 4D",
+  mejoraok_landing: "Landing Mejoraok",
+  diagnostico_4d: "Diagnóstico 4D (Test)",
   taller_mc: "Taller MC (60m)",
   after_office_12x12: "After Office 12x12",
   instagram_direct: "Instagram Direct",
   facebook_messenger: "Facebook Messenger",
   whatsapp_direct: "WhatsApp",
   crm_manual: "CRM Manual"
+};
+
+const BUYER_PERSONA_LABELS: Record<string, { label: string; badgeCls: string }> = {
+  SATURADO: { label: "El Fundador Saturado", badgeCls: "bg-red-50 text-red-800 border-red-300" },
+  LIDER_QUE_NECESITA_APOYO: { label: "Líder sin Herramientas", badgeCls: "bg-orange-50 text-orange-800 border-orange-300" },
+  INDEPENDIENTE_EN_CRECIMIENTO: { label: "Independiente en Crecimiento", badgeCls: "bg-blue-50 text-blue-800 border-blue-300" },
+  EQUIPO_DESALINEADO: { label: "Equipo Desalineado", badgeCls: "bg-purple-50 text-purple-800 border-purple-300" },
+  ESCEPTICO: { label: "El Escéptico Pragmático", badgeCls: "bg-slate-100 text-slate-800 border-slate-300" },
+  NUEVA_GENERACION: { label: "Nueva Generación al Mando", badgeCls: "bg-emerald-50 text-emerald-800 border-emerald-300" },
+  AREA_COMERCIAL_SIN_RESULTADOS: { label: "Comercial sin Conversión", badgeCls: "bg-rose-50 text-rose-800 border-rose-300" },
+  SIN_PROFESIONALIZAR_LA_EMPRESA: { label: "Empresa sin Procesos", badgeCls: "bg-amber-50 text-amber-900 border-amber-300" }
 };
 
 const ESTADO_LABELS: Record<EstadoProspecto, string> = {
@@ -258,8 +270,14 @@ export function ProspectosSlaTable({ prospectos, isLoading }: ProspectosSlaTable
                             </span>
                           )}
                           {p.buyerPersonaId && (
-                            <span className="inline-block px-2 py-0.5 rounded text-[10px] font-semibold bg-amber-50 border border-amber-300 text-amber-900">
-                              Perfil: {p.buyerPersonaId}
+                            <span
+                              className={`inline-block px-2 py-0.5 rounded text-[10px] font-semibold border ${
+                                BUYER_PERSONA_LABELS[p.buyerPersonaId]?.badgeCls ||
+                                "bg-amber-50 border-amber-300 text-amber-900"
+                              }`}
+                              title={`Buyer Persona 4D: ${p.buyerPersonaId}`}
+                            >
+                              🎯 {BUYER_PERSONA_LABELS[p.buyerPersonaId]?.label || p.buyerPersonaId}
                             </span>
                           )}
                         </div>
