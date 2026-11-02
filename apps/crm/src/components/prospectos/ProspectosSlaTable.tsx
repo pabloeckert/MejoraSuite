@@ -55,6 +55,7 @@ const CANAL_LABELS: Record<string, string> = {
   landing_hostinger: "Landing Web (Hostinger)",
   mejoraok_landing: "Landing Mejoraok",
   diagnostico_4d: "Diagnóstico 4D (Test)",
+  base_propia_contactos: "Base Propia (Contactos)",
   taller_mc: "Taller MC (60m)",
   after_office_12x12: "After Office 12x12",
   instagram_direct: "Instagram Direct",
@@ -328,6 +329,26 @@ export function ProspectosSlaTable({ prospectos, isLoading }: ProspectosSlaTable
                             >
                               <ArrowRight className="h-3.5 w-3.5" />
                               <span>Seguimiento</span>
+                            </Button>
+                          )}
+
+                          {/* Acelerador WhatsApp: Disparo rápido de plantilla en 1 clic */}
+                          {p.telefono && (p.estado === "CAPTURADO" || p.estado === "CALIFICADO" || p.estado === "EN_SEGUIMIENTO") && (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="h-8 text-xs font-semibold gap-1 bg-emerald-50 border-emerald-300 hover:bg-emerald-100 text-emerald-800 cursor-pointer"
+                              onClick={() => {
+                                const cleanPhone = p.telefono.replace(/[^\d]/g, "");
+                                const msg = p.estado === "CAPTURADO"
+                                  ? `Hola ${p.nombre.split(" ")[0]}, te contacto desde Mejora Continua por tu consulta. ¿Cómo estás hoy?`
+                                  : `Hola ${p.nombre.split(" ")[0]}, te escribo para coordinar los próximos pasos en la optimización de tus procesos.`;
+                                window.open(`https://wa.me/${cleanPhone}?text=${encodeURIComponent(msg)}`, "_blank");
+                              }}
+                              title="Disparar plantilla de aceleración por WhatsApp en 1 clic"
+                            >
+                              <Phone className="h-3.5 w-3.5 text-emerald-600" />
+                              <span>WhatsApp</span>
                             </Button>
                           )}
 
