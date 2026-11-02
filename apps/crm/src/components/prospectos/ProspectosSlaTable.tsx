@@ -241,11 +241,28 @@ export function ProspectosSlaTable({ prospectos, isLoading }: ProspectosSlaTable
                         </div>
                       </TableCell>
 
-                      {/* Canal de Origen */}
+                      {/* Canal de Origen y Atribución Universal */}
                       <TableCell className="align-top py-3.5">
-                        <span className="inline-block px-2.5 py-1 rounded-md text-xs font-medium bg-slate-100 border border-slate-200 text-slate-700">
-                          {CANAL_LABELS[p.canalOrigen] || p.canalOrigen}
-                        </span>
+                        <div className="flex flex-col items-start gap-1">
+                          <span className="inline-block px-2.5 py-1 rounded-md text-xs font-medium bg-slate-100 border border-slate-200 text-slate-700">
+                            {CANAL_LABELS[p.canalOrigen] || p.canalOrigen}
+                          </span>
+                          {p.piezaIdAtribucion && (
+                            <span className="inline-block px-2 py-0.5 rounded text-[10px] font-semibold bg-blue-50 border border-blue-200 text-blue-800 font-mono">
+                              Pieza: {p.piezaIdAtribucion}
+                            </span>
+                          )}
+                          {(p.utmSource || p.utmCampaign) && (
+                            <span className="text-[10px] text-slate-500 font-mono">
+                              {[p.utmSource, p.utmMedium, p.utmCampaign].filter(Boolean).join(" / ")}
+                            </span>
+                          )}
+                          {p.buyerPersonaId && (
+                            <span className="inline-block px-2 py-0.5 rounded text-[10px] font-semibold bg-amber-50 border border-amber-300 text-amber-900">
+                              Perfil: {p.buyerPersonaId}
+                            </span>
+                          )}
+                        </div>
                       </TableCell>
 
                       {/* SLA 48 Horas */}
@@ -447,3 +464,4 @@ export function ProspectosSlaTable({ prospectos, isLoading }: ProspectosSlaTable
     </>
   );
 }
+

@@ -20,6 +20,12 @@ export interface ProspectoResponseDTO {
   telefono: string;
   canalOrigen: string;
   estado: EstadoProspecto;
+  piezaIdAtribucion?: string;
+  utmSource?: string;
+  utmMedium?: string;
+  utmCampaign?: string;
+  utmContent?: string;
+  buyerPersonaId?: string;
   createdAt: string;
   updatedAt: string;
   slaHorasRestantes: number;
@@ -41,6 +47,12 @@ export interface CrearProspectoInput {
   email: string;
   telefono: string;
   canalOrigen: string;
+  piezaIdAtribucion?: string;
+  utmSource?: string;
+  utmMedium?: string;
+  utmCampaign?: string;
+  utmContent?: string;
+  buyerPersonaId?: string;
 }
 
 const LOCAL_STORAGE_CACHE_KEY = 'mejora_prospectos_nucleo_cache';
@@ -392,3 +404,4 @@ export const prospectosNucleoService = {
     saveLocalCache(current);
   }
 };
+
