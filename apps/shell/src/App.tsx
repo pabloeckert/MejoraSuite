@@ -11,6 +11,7 @@ import { CrmApp, CrmNucleoWidget } from '@mejora/crm';
 import { ContactosApp, ContactosNucleoWidget } from '@mejora/contactos';
 import { SmApp } from '@mejora/sm';
 import { WaDashboard } from './components/whatsapp/WaDashboard';
+import { EdificioComercialLiveConsole } from './components/EdificioComercialLiveConsole';
 
 const initialTelemetry: TelemetryData = {
   totalContactos: 20,
@@ -117,6 +118,11 @@ export function App() {
               canales de captación, fuente de verdad de identidad y aceleración del pipeline comercial.
             </p>
           </div>
+
+          {/* Tablero Ejecutivo de Negocio + Consola Operativa de Prospectos SLA 48h en Vivo */}
+          <EdificioComercialLiveConsole
+            onNavigateView={(v) => setActiveView(v)}
+          />
 
           {/* Live Telemetry Bar */}
           <TelemetryBar

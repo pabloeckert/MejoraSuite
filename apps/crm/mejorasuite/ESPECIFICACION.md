@@ -2,7 +2,7 @@
 
 **Este documento es la fuente de verdad de la arquitectura.** `PENDIENTES.md` dice qué falta, `DECISIONES.md` por qué se decidió cada cosa, `PROMPT_CONTINUACION.md` cómo retomar el trabajo en una sesión nueva. Vive en `MejoraCRM/mejorasuite/` porque MejoraCRM es el rector del conjunto — ver veredicto abajo.
 
-## Los tres productos (verificado línea por línea contra el código real, no contra el resumen de Lovable)
+## Los tres productos (verificado línea por línea contra el código real, no contra el resumen de la propuesta externa)
 
 | Producto | Repo | Deploy | Qué es hoy |
 |---|---|---|---|
@@ -25,22 +25,22 @@ MejoraWS         (rector de sí mismo) → embebe adentro a MejoraContactos
 
 Es decir: parado en cualquiera de los tres, se puede llegar a los otros dos sin salir de la app. MejoraCRM es el único que contiene a los otros dos simultáneamente (por eso es "el rector" en el sentido amplio que se acordó al principio: es el que tiene usuarios reales, datos multi-tenant y auth ya resueltos).
 
-## Cómo se embebe cada par (mecanismo técnico — decisión de Claude, no de Lovable)
+## Cómo se embebe cada par (mecanismo técnico — decisión de Claude, no de la propuesta externa)
 
-Lovable proponía portar todo a un solo Electron y reescribir Baileys en TS dentro de ese proceso nuevo. **Se descarta esa vía.** Motivo: una sesión anterior de Claude ya evaluó exactamente esto para la relación motor-contactos↔MejoraWS y lo rechazó por escrito (`motor-contactos/src/motor/mejoraws_launcher.py`, docstring) — reescribir Baileys en otro stack duplica una lógica ya afinada (delay random, tope diario) con más riesgo de ban de cuenta, no menos. Se aplica el mismo criterio a los tres embebidos:
+la propuesta externa proponía portar todo a un solo Electron y reescribir Baileys en TS dentro de ese proceso nuevo. **Se descarta esa vía.** Motivo: una sesión anterior de Claude ya evaluó exactamente esto para la relación motor-contactos↔MejoraWS y lo rechazó por escrito (`motor-contactos/src/motor/mejoraws_launcher.py`, docstring) — reescribir Baileys en otro stack duplica una lógica ya afinada (delay random, tope diario) con más riesgo de ban de cuenta, no menos. Se aplica el mismo criterio a los tres embebidos:
 
 - **MejoraCRM ⟷ MejoraContactos (web ⟷ web)**: embebido por `<iframe>` apuntando a la URL pública desplegada de cada uno (`crm.mejoraok.com` / la URL de GitHub Pages de MejoraContactos). Cero acoplamiento de código, cada uno sigue deployando por su cuenta sin coordinar builds.
 - **MejoraWS embebe MejoraContactos (Electron ⟷ web)**: Electron aloja la URL pública de MejoraContactos en un `<webview>`/`BrowserView` — Electron está hecho para esto, no hace falta nada especial.
 - **MejoraCRM / MejoraContactos embeben MejoraWS (web ⟷ Electron)**: un navegador no puede embeber un proceso de escritorio de otro. Se usa el mismo patrón que ya existe y funciona (`mejoraws_launcher.py`): un panel liviano que (a) lanza/enfoca la app de escritorio si no está corriendo, y (b) habla con un bridge local HTTP/WebSocket que el proceso principal de MejoraWS expone en `localhost` (a construir — hoy MejoraWS no tiene ese bridge, solo el `.bat` de lanzamiento) para mostrar estado (conectado/desconectado, cola de envíos, métricas) sin mover la lógica de Baileys de lugar.
 
-Esto también resuelve en simultáneo el pedido de "que los mensajes de WhatsApp dejen rastro en el CRM" del brief original de Lovable: el bridge local de MejoraWS es el canal por el que las respuestas/envíos se convierten en Interacciones dentro de MejoraCRM, sin que MejoraCRM necesite saber nada de Baileys.
+Esto también resuelve en simultáneo el pedido de "que los mensajes de WhatsApp dejen rastro en el CRM" del brief original de la propuesta externa: el bridge local de MejoraWS es el canal por el que las respuestas/envíos se convierten en Interacciones dentro de MejoraCRM, sin que MejoraCRM necesite saber nada de Baileys.
 
 ## Restricciones que no se negocian (verificadas, no asumidas)
 
 - **Nunca** los datos de `motor-contactos/Data/` (contactos reales de terceros) van a ningún repo público — ya está así, no tocar ese `.gitignore`.
 - **Nunca** reescribir o mover la lógica de Baileys/envío de WhatsApp fuera de `MejoraWS/electron/`. Delay random y tope diario existentes no son negociables ni configurables por debajo de un mínimo.
-- El plan de Lovable de "un solo repo Vite SPA" queda descartado — cada repo sigue siendo su propio proyecto, con su propio `CLAUDE.md`, su propio CI, su propio deploy.
-- Versiones de cada stack **no se unifican** (a diferencia de lo que proponía Lovable) — al no fusionar código, React 18 (CRM/Contactos) y React 19 (WS) conviven sin conflicto porque nunca comparten un mismo bundle.
+- El plan de la propuesta externa de "un solo repo Vite SPA" queda descartado — cada repo sigue siendo su propio proyecto, con su propio `CLAUDE.md`, su propio CI, su propio deploy.
+- Versiones de cada stack **no se unifican** (a diferencia de lo que proponía la propuesta externa) — al no fusionar código, React 18 (CRM/Contactos) y React 19 (WS) conviven sin conflicto porque nunca comparten un mismo bundle.
 
 ## Estado de la auditoría de seguridad de los 3 repos (2026-08-15)
 

@@ -4,6 +4,7 @@ import { DashboardSkeleton } from "@/components/skeletons";
 import { useDashboardData } from "@/hooks/useDashboard";
 import { useProfiles } from "@/hooks/useProfiles";
 import { OwnerViewV2, SellerViewV2 } from "@/components/dashboard";
+import Prospectos from "./Prospectos";
 import { AlertCircle, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { TargetMap } from "@/lib/types";
@@ -47,24 +48,30 @@ export default function Dashboard() {
 
   if (isOwner) {
     return (
-      <OwnerViewV2
-        interactions={interactions}
-        clients={clients}
-        profiles={profiles}
-        targetMap={targetMap}
-        navigate={navigate}
-      />
+      <div className="space-y-8">
+        <Prospectos />
+        <OwnerViewV2
+          interactions={interactions}
+          clients={clients}
+          profiles={profiles}
+          targetMap={targetMap}
+          navigate={navigate}
+        />
+      </div>
     );
   }
 
   const myTarget = user?.id ? (targetMap[user.id] ?? null) : null;
 
   return (
-    <SellerViewV2
-      interactions={interactions.filter((i: any) => i.user_id === user?.id)}
-      sellerName={profile?.full_name || "Vendedor"}
-      monthlyTarget={myTarget}
-      navigate={navigate}
-    />
+    <div className="space-y-8">
+      <Prospectos />
+      <SellerViewV2
+        interactions={interactions.filter((i: any) => i.user_id === user?.id)}
+        sellerName={profile?.full_name || "Vendedor"}
+        monthlyTarget={myTarget}
+        navigate={navigate}
+      />
+    </div>
   );
 }

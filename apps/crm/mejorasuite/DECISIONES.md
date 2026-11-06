@@ -38,11 +38,11 @@ Log append-only. No se edita lo viejo, solo se agrega. Cada entrada: fecha, deci
 ## 2026-08-15 — Veredicto de rector: MejoraCRM
 
 **Decisión:** de los tres proyectos, MejoraCRM es el rector.
-**Motivo:** es el único con usuarios reales, modelo de datos multi-tenant y auth ya resueltos — los otros dos no tienen que rehacer nada de eso, se conectan a lo que ya existe. Propuesta original de Lovable, confirmada por Claude tras auditar el código real de los tres repos (no solo el resumen de Lovable).
+**Motivo:** es el único con usuarios reales, modelo de datos multi-tenant y auth ya resueltos — los otros dos no tienen que rehacer nada de eso, se conectan a lo que ya existe. Propuesta original de propuesta externa, confirmada por Claude tras auditar el código real de los tres repos (no solo el resumen de propuesta externa).
 
 ## 2026-08-15 — Se descarta la fusión de código en un solo repo/Electron
 
-**Decisión:** no se hace lo que proponía Lovable (un solo repo Vite+Electron, Baileys portado a TS, motor de contactos incrustado). Los tres siguen siendo repos y deploys separados.
+**Decisión:** no se hace lo que proponía propuesta externa (un solo repo Vite+Electron, Baileys portado a TS, motor de contactos incrustado). Los tres siguen siendo repos y deploys separados.
 **Motivo:**
 1. MejoraContactos no es "repuestos" — es un producto SaaS público en vivo (landing, pricing, tiers free/pro, deploy a GitHub Pages). Fusionarlo adentro de un CRM interno de escritorio lo hubiera discontinuado como producto sin que Pablo lo pidiera explícitamente.
 2. Una sesión anterior de Claude, trabajando en `motor-contactos/`, ya evaluó exactamente la pregunta "¿reimplemento el envío de WhatsApp acá adentro?" para la relación motor-contactos↔MejoraWS y la rechazó por escrito (`mejoraws_launcher.py`, docstring): dos stacks completamente distintos, riesgo real de ban de cuenta de WhatsApp si se reimplementa mal, duplicar lógica ya afinada (delay random, tope diario) es más riesgo, no menos. Se aplicó el mismo criterio a los tres pares.

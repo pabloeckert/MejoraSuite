@@ -70,7 +70,7 @@ Este informe define la **topología real**, la **matriz de desconexiones exactas
 | 6 | **MejoraSM** | React + Vite + Deno (11 Edge Functions) | **Marketing & Redes Sociales** | Supabase propio (15 tablas, `inbox_items`, vault) + Zernio API | `mejorasm.mejoraok.com` |
 | 7 | **MejoraSuite** | Electron + JavaScript + IPC | **Launcher & Panel de Control** | Local (IPC bridge, single-instance lock) | Desktop App |
 | 8 | **MejoraIdentidad** | Markdown, PDF, Assets, Claude Skill | **Fuente de Verdad de Marca** | Archivos estáticos, fuentes Bw Modelica/League Spartan | Repositorio documental y skill |
-| 9 | **Mejoraok** | React + Vite + TanStack Router | **Sitio Institucional Público** | Supabase propio (Lovable Cloud) | `mejoraok.com` |
+| 9 | **Mejoraok** | React + Vite + TanStack Router | **Sitio Institucional Público** | Supabase institucional | `mejoraok.com` |
 | 10 | **MejoraDecisiones** | React 19 + Vite 5 + Tailwind v4 + Recharts | **Inteligencia Política & Tablero Nash** | APIs públicas (BCRA, DolarAPI, INDEC) + Memoria local | `pabloeckert.github.io/MejoraDecisiones/` |
 
 ---
